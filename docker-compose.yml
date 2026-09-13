@@ -52,7 +52,7 @@ services:
 
   # 4. 9Router AI Proxy Gateway
   nine-router:
-    image: ghcr.io/9router/9router:latest
+    image: decolua/9router:latest
     container_name: karsa-pantau-9router
     restart: unless-stopped
     ports:

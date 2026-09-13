@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: 9router
-          image: ghcr.io/9router/9router:latest
+          image: decolua/9router:latest
           ports:
             - containerPort: 20128
               name: proxy

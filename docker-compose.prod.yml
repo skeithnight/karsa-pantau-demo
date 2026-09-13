@@ -134,7 +134,7 @@ services:
 
   # 8. 9Router AI Proxy Gateway (Isolated Internal)
   nine-router:
-    image: ghcr.io/9router/9router:latest
+    image: decolua/9router:latest
     container_name: karsa-nine-router
     restart: unless-stopped
     environment:
