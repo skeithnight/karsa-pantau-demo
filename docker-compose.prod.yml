@@ -142,6 +142,9 @@ services:
       ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      INITIAL_PASSWORD: ${INITIAL_PASSWORD:-${NINE_ROUTER_ADMIN_PASSWORD:-KarsaAdmin2026!}}
+    volumes:
+      - nine_router_data:/app/data
     depends_on:
       redis:
         condition: service_healthy
@@ -152,3 +155,4 @@ volumes:
   postgres_prod_data:
   redis_prod_data:
   minio_prod_data:
+  nine_router_data:
