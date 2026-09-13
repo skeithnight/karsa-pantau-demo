@@ -109,13 +109,14 @@ Prinsip Penting:
           tokens_used, 
           model_used, 
           organization_id
-        ) VALUES ($1, 'chat_response', $2, $3, $4, 'claude-3-5-sonnet', $5);
+        ) VALUES ($1, 'chat_response', $2, $3, $4, $5, $6);
         `,
         [
           projectId,
           JSON.stringify({ query: message }),
           JSON.stringify({ response: fullResponse }),
           Math.round((message.length + fullResponse.length) / 4),
+          this.nineRouter.getDefaultModel(),
           organizationId,
         ],
       );

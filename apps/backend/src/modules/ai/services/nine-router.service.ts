@@ -17,10 +17,16 @@ export class NineRouterService {
   private readonly logger = new Logger(NineRouterService.name);
   private readonly baseUrl: string;
   private readonly apiKey: string;
+  private readonly defaultModel: string;
 
   constructor() {
     this.baseUrl = (process.env.NINE_ROUTER_BASE_URL || 'http://localhost:20128/v1').replace(/\/+$/, '');
-    this.apiKey = process.env.NINE_ROUTER_API_KEY || 'nr-cluster-internal-api-key';
+    this.apiKey = process.env.NINE_ROUTER_API_KEY || 'sk-85b7dc558fb57f97-rwjq4l-06528d60';
+    this.defaultModel = process.env.NINE_ROUTER_MODEL || 'karsacombo';
+  }
+
+  getDefaultModel(): string {
+    return this.defaultModel;
   }
 
   async isAvailable(): Promise<{ available: boolean; latencyMs?: number; error?: string }> {
@@ -43,7 +49,7 @@ export class NineRouterService {
     messages: ChatMessage[],
     options: { model?: string; temperature?: number; maxTokens?: number } = {},
   ): Promise<ChatCompletionResult> {
-    const model = options.model || 'claude-3-5-sonnet';
+    const model = options.model || this.defaultModel;
     const start = Date.now();
 
     try {
@@ -117,7 +123,7 @@ export class NineRouterService {
     messages: ChatMessage[],
     options: { model?: string; temperature?: number } = {},
   ): AsyncGenerator<string, void, unknown> {
-    const model = options.model || 'claude-3-5-sonnet';
+    const model = options.model || this.defaultModel;
 
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',

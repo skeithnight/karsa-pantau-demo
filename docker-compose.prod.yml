@@ -55,7 +55,8 @@ services:
       OBJECT_STORAGE_SECRET: ${OBJECT_STORAGE_SECRET:-minio_admin_password}
       OBJECT_STORAGE_USE_SSL: ${OBJECT_STORAGE_USE_SSL:-false}
       NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
-      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-sk-85b7dc558fb57f97-rwjq4l-06528d60}
+      NINE_ROUTER_MODEL: ${NINE_ROUTER_MODEL:-karsacombo}
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,7 +82,8 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-karsa_user}:${POSTGRES_PASSWORD:-karsa_secure_pass}@postgres:5432/${POSTGRES_DB:-karsa_db}?sslmode=disable}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
-      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-sk-85b7dc558fb57f97-rwjq4l-06528d60}
+      NINE_ROUTER_MODEL: ${NINE_ROUTER_MODEL:-karsacombo}
     depends_on:
       postgres:
         condition: service_healthy
