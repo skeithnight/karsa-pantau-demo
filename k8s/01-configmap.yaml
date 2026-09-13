@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: karsa-config
+  namespace: karsa-pantau
+data:
+  NODE_ENV: "production"
+  PORT: "3001"
+  DATABASE_HOST: "karsa-postgres-svc"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "karsa_db"
+  REDIS_URL: "redis://karsa-redis-svc:6379"
+  NINE_ROUTER_BASE_URL: "http://karsa-9router-svc:20128/v1"
+  OBJECT_STORAGE_ENDPOINT: "http://karsa-minio-svc:9000"
+  OBJECT_STORAGE_BUCKET: "karsa-pantau-receipts"
+  OBJECT_STORAGE_USE_SSL: "false"
+  NEXT_PUBLIC_API_BASE_URL: "/api/v1"

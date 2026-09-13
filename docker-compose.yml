@@ -1,0 +1,72 @@
+services:
+  # 1. PostgreSQL 16 with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: karsa-pantau-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: karsa_db
+      POSTGRES_USER: karsa_user
+      POSTGRES_PASSWORD: karsa_local_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U karsa_user -d karsa_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis 7 with AOF Persistence
+  redis:
+    image: redis:7-alpine
+    container_name: karsa-pantau-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 3. MinIO S3-Compatible Object Storage
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: karsa-pantau-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minio_admin_user
+      MINIO_ROOT_PASSWORD: minio_admin_password
+    volumes:
+      - minio_data:/data
+
+  # 4. 9Router AI Proxy Gateway
+  nine-router:
+    image: ghcr.io/9router/9router:latest
+    container_name: karsa-pantau-9router
+    restart: unless-stopped
+    ports:
+      - "20128:20128"
+    environment:
+      PORT: "20128"
+      ROUTER_API_KEY: "nr-cluster-internal-api-key"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

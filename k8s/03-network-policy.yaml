@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolate-9router-gateway
+  namespace: karsa-pantau
+spec:
+  podSelector:
+    matchLabels:
+      app: karsa-9router
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: karsa-backend-api
+        - podSelector:
+            matchLabels:
+              app: karsa-worker
+      ports:
+        - protocol: TCP
+          port: 20128
+  egress:
+    - to: [] # Allow egress to public DNS and upstream AI APIs (port 443)
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: UDP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolate-database
+  namespace: karsa-pantau
+spec:
+  podSelector:
+    matchLabels:
+      app: karsa-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: karsa-backend-api
+        - podSelector:
+            matchLabels:
+              app: karsa-worker
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolate-redis
+  namespace: karsa-pantau
+spec:
+  podSelector:
+    matchLabels:
+      app: karsa-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: karsa-backend-api
+        - podSelector:
+            matchLabels:
+              app: karsa-worker
+      ports:
+        - protocol: TCP
+          port: 6379

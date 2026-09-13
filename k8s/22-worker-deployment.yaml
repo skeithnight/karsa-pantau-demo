@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karsa-worker
+  namespace: karsa-pantau
+  labels:
+    app: karsa-worker
+    tier: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: karsa-worker
+  template:
+    metadata:
+      labels:
+        app: karsa-worker
+    spec:
+      containers:
+        - name: worker
+          image: karsa/backend-worker:latest
+          envFrom:
+            - configMapRef:
+                name: karsa-config
+            - secretRef:
+                name: karsa-secrets
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: 1500m
+              memory: 2Gi
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 15"] # Let active BullMQ jobs finish

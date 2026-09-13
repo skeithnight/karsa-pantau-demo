@@ -1,0 +1,333 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle2,
+  Receipt,
+  WifiOff,
+  Send,
+  Building2,
+  Calendar,
+  Layers,
+} from 'lucide-react';
+import { apiRequest } from '../../../../../lib/api';
+import { queueOfflineActualEntry } from '../../../../../lib/offline/sync-queue';
+
+export default function ActualInputPage() {
+  const params = useParams();
+  const router = useRouter();
+  const projectId = params.id as string;
+
+  // Mock available RAB items
+  const rabItems = [
+    {
+      id: 'i1',
+      code: 'CIV-01',
+      desc: 'Floating Mounting Structure & Ponton HDPE',
+      subtotal: 10800000000,
+      currentActual: 3200000000,
+      unit: 'unit',
+    },
+    {
+      id: 'i2',
+      code: 'EL-DC-01',
+      desc: 'Modul PV Monokristalin Tier-1 550Wp',
+      subtotal: 25935000000,
+      currentActual: 24500000000,
+      unit: 'Wp',
+    },
+  ];
+
+  const [selectedItemId, setSelectedItemId] = useState(rabItems[0].id);
+  const [entryDate, setEntryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [vendor, setVendor] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [qty, setQty] = useState<number | ''>('');
+  const [unitPrice, setUnitPrice] = useState<number | ''>('');
+  const [description, setDescription] = useState('');
+
+  const [submitting, setSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'warning' | 'info'; text: string } | null>(
+    null,
+  );
+
+  const selectedItem = rabItems.find((i) => i.id === selectedItemId) || rabItems[0];
+
+  // Kalkulasi Live
+  const entryTotal =
+    typeof qty === 'number' && typeof unitPrice === 'number' && qty > 0 && unitPrice > 0
+      ? qty * unitPrice
+      : 0;
+
+  const projectedTotal = selectedItem.currentActual + entryTotal;
+  const isOverbudget = projectedTotal > selectedItem.subtotal;
+  const remainingBudget = selectedItem.subtotal - selectedItem.currentActual;
+
+  const formatRupiah = (val: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      maximumFractionDigits: 0,
+    }).format(val);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vendor || !qty || !unitPrice) {
+      alert('Mohon lengkapi vendor, qty, dan harga satuan!');
+      return;
+    }
+
+    setSubmitting(true);
+    setStatusMessage(null);
+
+    const payload = {
+      entryDate,
+      qty: Number(qty),
+      actualUnitPrice: Number(unitPrice),
+      vendor,
+      invoiceNumber,
+      description,
+    };
+
+    try {
+      // 1. Coba kirim online ke backend API
+      await apiRequest(`/rab-items/${selectedItemId}/actuals`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      setStatusMessage({
+        type: 'success',
+        text: 'Realisasi biaya berhasil tersimpan di server dan variance diperbarui!',
+      });
+      setTimeout(() => router.push(`/projects/${projectId}`), 1500);
+    } catch (err) {
+      // 2. Fallback offline: simpan ke antrean IndexedDB
+      await queueOfflineActualEntry({
+        rabItemId: selectedItemId,
+        entryDate,
+        qty: Number(qty),
+        actualUnitPrice: Number(unitPrice),
+        vendor,
+        invoiceNumber,
+        description,
+      });
+
+      setStatusMessage({
+        type: 'info',
+        text: 'Koneksi offline atau tidak stabil. Data telah disimpan aman di Antrean Offline (IndexedDB) dan akan disinkron otomatis saat sinyal kembali.',
+      });
+      setTimeout(() => router.push(`/projects/${projectId}`), 2500);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="border-b border-slate-800 pb-4">
+        <Link
+          href={`/projects/${projectId}`}
+          className="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1 mb-1"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Kembali ke Dashboard Proyek
+        </Link>
+        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <Receipt className="w-6 h-6 text-emerald-400" />
+          Input Realisasi Lapangan (Actual)
+        </h1>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Pencatatan pengeluaran riil, pembelian material, atau upah lapangan
+        </p>
+      </div>
+
+      {statusMessage && (
+        <div
+          className={`p-4 rounded-xl border text-xs flex items-center gap-2.5 ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-950/80 border-emerald-800 text-emerald-300'
+              : 'bg-sky-950/80 border-sky-800 text-sky-300'
+          }`}
+        >
+          {statusMessage.type === 'success' ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          ) : (
+            <WifiOff className="w-5 h-5 text-sky-400 flex-shrink-0" />
+          )}
+          <span>{statusMessage.text}</span>
+        </div>
+      )}
+
+      {/* Warning Banner Bila Overbudget */}
+      {isOverbudget && (
+        <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-200 text-xs flex items-start gap-3 shadow-lg shadow-rose-950/40 animate-pulse">
+          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-rose-300 block text-sm">
+              PERINGATAN OVERBUDGET!
+            </span>
+            <span>
+              Entri ini akan menyebabkan total pengeluaran untuk item ini mencapai{' '}
+              <strong>{formatRupiah(projectedTotal)}</strong>, melebihi anggaran RAB sebesar{' '}
+              <strong>{formatRupiah(projectedTotal - selectedItem.subtotal)}</strong>.
+            </span>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
+        {/* Pilih Item RAB */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-300 mb-1">
+            Pilih Item RAB Terkait
+          </label>
+          <select
+            value={selectedItemId}
+            onChange={(e) => setSelectedItemId(e.target.value)}
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-sky-500"
+          >
+            {rabItems.map((it) => (
+              <option key={it.id} value={it.id}>
+                [{it.code}] {it.desc}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Info Anggaran Item Terpilih */}
+        <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
+          <div>
+            <span className="text-slate-400 block">Anggaran RAB:</span>
+            <span className="font-bold text-slate-200">{formatRupiah(selectedItem.subtotal)}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block">Sisa Anggaran Tersedia:</span>
+            <span
+              className={`font-bold ${
+                remainingBudget < 0 ? 'text-rose-400' : 'text-emerald-400'
+              }`}
+            >
+              {formatRupiah(remainingBudget)}
+            </span>
+          </div>
+        </div>
+
+        {/* Tanggal & Vendor */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Tanggal Transaksi
+            </label>
+            <div className="relative">
+              <input
+                type="date"
+                value={entryDate}
+                onChange={(e) => setEntryDate(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Nama Vendor / Supplier
+            </label>
+            <input
+              type="text"
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+              required
+              placeholder="PT Sinar Mandiri / CV Teknik"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white"
+            />
+          </div>
+        </div>
+
+        {/* No Faktur / Nota */}
+        <div>
+          <label className="block text-xs font-medium text-slate-300 mb-1">
+            Nomor Faktur / Nota (Opsional)
+          </label>
+          <input
+            type="text"
+            value={invoiceNumber}
+            onChange={(e) => setInvoiceNumber(e.target.value)}
+            placeholder="INV-2026-XXXX"
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-mono"
+          />
+        </div>
+
+        {/* Volume & Harga Aktual */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Kuantitas (Qty: {selectedItem.unit})
+            </label>
+            <input
+              type="number"
+              step="any"
+              value={qty}
+              onChange={(e) => setQty(e.target.value ? Number(e.target.value) : '')}
+              required
+              placeholder="0"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Harga Satuan Riil (Rp)
+            </label>
+            <input
+              type="number"
+              step="any"
+              value={unitPrice}
+              onChange={(e) => setUnitPrice(e.target.value ? Number(e.target.value) : '')}
+              required
+              placeholder="0"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-mono"
+            />
+          </div>
+        </div>
+
+        {/* Keterangan */}
+        <div>
+          <label className="block text-xs font-medium text-slate-300 mb-1">
+            Keterangan Pengeluaran
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            placeholder="Catatan pembelian, batch material, atau peruntukan pengerjaan..."
+            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white"
+          />
+        </div>
+
+        {/* Total Pengeluaran Entri Ini */}
+        <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+          <span className="text-xs text-slate-400">Total Pengeluaran Entri Ini:</span>
+          <span className="text-base font-bold text-white font-mono">{formatRupiah(entryTotal)}</span>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-sm text-white transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2"
+        >
+          <Send className="w-4 h-4" />
+          {submitting ? 'Menyimpan...' : 'Simpan Realisasi Lapangan'}
+        </button>
+      </form>
+    </div>
+  );
+}

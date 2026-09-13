@@ -1,0 +1,16 @@
+{
+  "name": "karsa-pantau",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise Construction Budgeting & Monitoring Platform for Solar PV Projects",
+  "scripts": {
+    "dev": "pnpm --parallel run dev",
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test",
+    "test:cov": "pnpm --filter backend run test:cov",
+    "lint": "pnpm --recursive run lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

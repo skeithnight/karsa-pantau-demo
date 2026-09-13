@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: karsa-pantau
+  labels:
+    name: karsa-pantau
+    app.kubernetes.io/part-of: karsa-pantau

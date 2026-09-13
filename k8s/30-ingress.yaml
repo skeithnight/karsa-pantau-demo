@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: karsa-ingress
+  namespace: karsa-pantau
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Streaming & SSE configuration for /ai/chat
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m" # Allow invoice photo uploads
+spec:
+  tls:
+    - hosts:
+        - app.karsapantau.id
+      secretName: karsa-tls-cert
+  rules:
+    - host: app.karsapantau.id
+      http:
+        paths:
+          # Backend API & SSE Routes
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: karsa-backend-api-svc
+                port:
+                  number: 3001
+          # Frontend PWA App Shell Routes
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: karsa-frontend-svc
+                port:
+                  number: 3000
