@@ -68,7 +68,7 @@ BEGIN
     -- Item 1: Modul Surya Tier-1 Bifacial 550 Wp
     INSERT INTO rab_items (rab_id, wbs_code, item_code, work_package, category, description, volume, unit, unit_price, weight_pct)
     VALUES (
-      v_rab_id, '1.1', 'PV-550W-BIFACIAL', 'PROCUREMENT_PV', 'MATERIAL',
+      v_rab_id, '1.1', 'PV-550W-BIFACIAL', 'ELECTRICAL_DC', 'material',
       'Modul Surya Tier-1 Monocrystalline Bifacial 550 Wp (910 unit)',
       910, 'unit', 1650000.00, 61.248
     ) RETURNING id INTO v_item_modul;
@@ -76,7 +76,7 @@ BEGIN
     -- Item 2: Inverter String On-Grid 100 kW
     INSERT INTO rab_items (rab_id, wbs_code, item_code, work_package, category, description, volume, unit, unit_price, weight_pct)
     VALUES (
-      v_rab_id, '1.2', 'INV-100KW-STRING', 'PROCUREMENT_INVERTER', 'EQUIPMENT',
+      v_rab_id, '1.2', 'INV-100KW-STRING', 'ELECTRICAL_AC', 'alat',
       'String Inverter On-Grid 100 kW 3-Phase IP66 (5 unit)',
       5, 'unit', 75000000.00, 15.297
     ) RETURNING id INTO v_item_inverter;
@@ -84,7 +84,7 @@ BEGIN
     -- Item 3: Struktur Mounting Rooftop Aluminium & Rel Rail
     INSERT INTO rab_items (rab_id, wbs_code, item_code, work_package, category, description, volume, unit, unit_price, weight_pct)
     VALUES (
-      v_rab_id, '2.1', 'MOUNT-ROOF-ALU', 'CIVIL_MOUNTING', 'MATERIAL',
+      v_rab_id, '2.1', 'MOUNT-ROOF-ALU', 'CIVIL', 'material',
       'Struktur Mounting Aluminium AL6005-T5 Roof Clamp & Rail (500 kWp)',
       500, 'kWp', 450000.00, 9.178
     ) RETURNING id INTO v_item_mounting;
@@ -92,7 +92,7 @@ BEGIN
     -- Item 4: Pengkabelan DC/AC, Panel Distribusi & Komisioning
     INSERT INTO rab_items (rab_id, wbs_code, item_code, work_package, category, description, volume, unit, unit_price, weight_pct)
     VALUES (
-      v_rab_id, '3.1', 'ELEC-ACDC-COMM', 'ELECTRICAL_INTERCONNECTION', 'SUBCONTRACTOR',
+      v_rab_id, '3.1', 'ELEC-ACDC-COMM', 'TESTING_COMMISSIONING', 'upah',
       'Instalasi Kabel DC Surya 4mm2, Kabel AC XLPE, Panel ACDB, Grounding & Testing Komisioning',
       1, 'paket', 350000000.00, 14.277
     ) RETURNING id INTO v_item_kabel;
