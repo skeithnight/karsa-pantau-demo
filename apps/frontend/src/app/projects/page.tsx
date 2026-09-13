@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Layers, Plus, MapPin, Zap, TrendingUp, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getAuthToken } from '../../lib/api';
 
 interface Project {
   id: string;
@@ -46,10 +47,17 @@ const DEFAULT_DEMO_PROJECTS: Project[] = [
 ];
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>(DEFAULT_DEMO_PROJECTS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      router.push('/login?redirect=/projects');
+      return;
+    }
+
     apiRequest<{ data: Project[] }>('/projects')
       .then((res) => {
         if (res && res.data && res.data.length > 0) {
@@ -60,7 +68,7 @@ export default function ProjectsPage() {
         // Gunakan demo data jika backend belum terhubung
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -71,7 +79,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>

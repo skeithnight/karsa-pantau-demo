@@ -89,7 +89,7 @@ export default function ProjectDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header Dashboard */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>

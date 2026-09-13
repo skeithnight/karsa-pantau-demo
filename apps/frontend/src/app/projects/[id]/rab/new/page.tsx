@@ -133,7 +133,7 @@ export default function RabBuilderPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Back button & Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div>

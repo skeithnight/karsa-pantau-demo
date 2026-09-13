@@ -130,7 +130,7 @@ export default function ActualInputPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 py-6 px-4">
       {/* Header */}
       <div className="border-b border-slate-800 pb-4">
         <Link

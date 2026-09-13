@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
   XCircle,
@@ -11,7 +12,7 @@ import {
   Calendar,
   Building,
 } from 'lucide-react';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getAuthToken } from '../../lib/api';
 
 interface PendingRab {
   id: string;
@@ -38,6 +39,7 @@ export default function ApprovalsPage() {
     },
   ]);
 
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedRabId, setSelectedRabId] = useState<string | null>(null);
@@ -45,6 +47,12 @@ export default function ApprovalsPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      router.push('/login?redirect=/approvals');
+      return;
+    }
+
     apiRequest<PendingRab[]>('/rab/pending-approvals')
       .then((data) => {
         if (data && data.length > 0) {
@@ -55,7 +63,7 @@ export default function ApprovalsPage() {
         // Fallback demo
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   const handleApprove = async (rabId: string) => {
     if (!confirm('Apakah Anda yakin ingin menyetujui (Approve) RAB ini menjadi baseline aktif?')) {
@@ -111,7 +119,7 @@ export default function ApprovalsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

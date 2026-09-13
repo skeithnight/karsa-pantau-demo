@@ -14,12 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
         <Providers>
           <Navigation />
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main className="flex-1 w-full">
             {children}
           </main>
-          <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-            Karsa Pantau EPC PLTS &copy; {new Date().getFullYear()} — Enterprise Construction Intelligence
-          </footer>
         </Providers>
       </body>
     </html>
