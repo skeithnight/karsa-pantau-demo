@@ -1,0 +1,87 @@
+name: karsa-pantau
+region: sgp
+services:
+  - name: frontend
+    github:
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: apps/frontend/Dockerfile
+    source_dir: .
+    http_port: 3000
+    instance_count: 2
+    instance_size_slug: basic-xs
+    routes:
+      - path: /
+    envs:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: ${backend.PUBLIC_URL}/api/v1
+
+  - name: backend
+    github:
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: apps/backend/Dockerfile
+    source_dir: .
+    http_port: 3001
+    instance_count: 2
+    instance_size_slug: basic-s
+    routes:
+      - path: /api/v1
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${karsa-db.DATABASE_URL}
+      - key: REDIS_URL
+        value: ${karsa-redis.REDIS_URL}
+      - key: JWT_SECRET
+        type: SECRET
+      - key: JWT_REFRESH_SECRET
+        type: SECRET
+      - key: NINE_ROUTER_BASE_URL
+        value: http://${nine-router.PRIVATE_URL}:20128/v1
+      - key: NINE_ROUTER_API_KEY
+        type: SECRET
+
+  - name: nine-router
+    image:
+      registry_type: DOCKER_HUB
+      registry: ghcr.io/9router/9router
+      tag: latest
+    internal_ports:
+      - 20128
+    envs:
+      - key: PORT
+        value: "20128"
+      - key: ANTHROPIC_API_KEY
+        type: SECRET
+      - key: OPENAI_API_KEY
+        type: SECRET
+
+workers:
+  - name: worker
+    github:
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: apps/backend/Dockerfile
+    source_dir: .
+    run_command: node apps/backend/dist/main.js
+    instance_count: 1
+    instance_size_slug: basic-s
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${karsa-db.DATABASE_URL}
+      - key: REDIS_URL
+        value: ${karsa-redis.REDIS_URL}
+
+databases:
+  - name: karsa-db
+    engine: PG
+    version: "16"
+    production: true
+  - name: karsa-redis
+    engine: REDIS
+    version: "7"
+    production: true

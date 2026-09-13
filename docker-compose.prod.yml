@@ -1,0 +1,154 @@
+services:
+  # 1. Reverse Proxy & Auto HTTPS (Let's Encrypt)
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: karsa-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-app.karsapantau.id}
+      SSL_EMAIL: ${SSL_EMAIL:-admin@karsapantau.id}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+
+  # 2. Next.js PWA Frontend (Standalone)
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    container_name: karsa-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://${DOMAIN:-app.karsapantau.id}/api/v1}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # 3. NestJS Backend API Pod
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: karsa-backend-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-karsa_user}:${POSTGRES_PASSWORD:-karsa_secure_pass}@postgres:5432/${POSTGRES_DB:-karsa_db}?sslmode=disable}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-http://minio:9000}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-karsa-pantau-receipts}
+      OBJECT_STORAGE_KEY: ${OBJECT_STORAGE_KEY:-minio_admin_user}
+      OBJECT_STORAGE_SECRET: ${OBJECT_STORAGE_SECRET:-minio_admin_password}
+      OBJECT_STORAGE_USE_SSL: ${OBJECT_STORAGE_USE_SSL:-false}
+      NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api/v1/health/liveness || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # 4. Asynchronous Background Worker (BullMQ / OCR / Batch)
+  worker:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: karsa-worker
+    restart: unless-stopped
+    command: ["node", "apps/backend/dist/main.js"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-karsa_user}:${POSTGRES_PASSWORD:-karsa_secure_pass}@postgres:5432/${POSTGRES_DB:-karsa_db}?sslmode=disable}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 5. PostgreSQL 16 with pgvector Extension
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: karsa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-karsa_db}
+      POSTGRES_USER: ${POSTGRES_USER:-karsa_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-karsa_secure_pass}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-karsa_user} -d ${POSTGRES_DB:-karsa_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 6. Redis 7 with AOF Persistence
+  redis:
+    image: redis:7-alpine
+    container_name: karsa-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 7. S3-Compatible Object Storage (MinIO)
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: karsa-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_KEY:-minio_admin_user}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET:-minio_admin_password}
+    volumes:
+      - minio_prod_data:/data
+
+  # 8. 9Router AI Proxy Gateway (Isolated Internal)
+  nine-router:
+    image: ghcr.io/9router/9router:latest
+    container_name: karsa-nine-router
+    restart: unless-stopped
+    environment:
+      PORT: "20128"
+      ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-nr-cluster-internal-api-key}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_prod_data:
+  redis_prod_data:
+  minio_prod_data:

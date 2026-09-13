@@ -1,0 +1,38 @@
+{
+    email {$SSL_EMAIL:admin@karsapantau.id}
+}
+
+{$DOMAIN:app.karsapantau.id} {
+    # Automatic Gzip & Zstandard compression
+    encode zstd gzip
+
+    # 1. Backend REST API & Server-Sent Events (SSE) AI Streaming
+    handle /api/v1/* {
+        reverse_proxy backend:3001 {
+            # Disable buffering for real-time AI stream and progress updates
+            flush_interval -1
+            # Maximum timeout for OCR & AI forecast processing
+            transport http {
+                response_header_timeout 600s
+            }
+        }
+    }
+
+    # 2. Kubernetes-compatible Health Probes
+    handle /health/* {
+        reverse_proxy backend:3001
+    }
+
+    # 3. MinIO Object Storage (Direct receipt view if applicable)
+    handle /receipts/* {
+        reverse_proxy minio:9000
+    }
+
+    # 4. Frontend Next.js 14 Standalone PWA
+    handle {
+        reverse_proxy frontend:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+}

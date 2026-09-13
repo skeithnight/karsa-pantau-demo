@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: karsa-db-migration
+  namespace: karsa-pantau
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: karsa-db-migration
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migration-runner
+          image: registry.digitalocean.com/karsa-registry/backend-api:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "apps/backend/dist/database/run-migration.js"]
+          envFrom:
+            - configMapRef:
+                name: karsa-config
+            - secretRef:
+                name: karsa-secrets

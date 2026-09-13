@@ -22,10 +22,11 @@ Sistem informasi web (PWA) untuk budgeting & monitoring proyek konstruksi PLTS (
 | `API_SPEC.md` | Daftar endpoint API, request/response, role akses |
 | `TESTING.md` | Strategi unit/integration/e2e test, pendekatan uji fitur AI |
 | `SETUP.md` | Env variable, Docker Compose, langkah setup lokal & deployment |
+| `DEPLOYMENT_GUIDE.md` | Panduan deployment produksi ke DigitalOcean (DOKS/Droplet) & GCP (GKE/Cloud Run) |
 | `CONVENTIONS.md` | Struktur folder, penamaan, git workflow, code style |
 | `GLOSSARY.md` | Istilah domain (RAB, AHSP, EVM, dll) |
 
-Urutan baca yang disarankan untuk memahami proyek secara utuh: `BRD.md` → `PRD.md` → `01` → `02` → `03` → `04` → `05` → `design.md` → `06` → `API_SPEC.md` → `TESTING.md` → `SETUP.md` → `CONVENTIONS.md` → `GLOSSARY.md`.
+Urutan baca yang disarankan untuk memahami proyek secara utuh: `BRD.md` → `PRD.md` → `01` → `02` → `03` → `04` → `05` → `design.md` → `06` → `API_SPEC.md` → `TESTING.md` → `SETUP.md` → `DEPLOYMENT_GUIDE.md` → `CONVENTIONS.md` → `GLOSSARY.md`.
 
 ## Tech Stack (ringkas — detail di 02 & 06)
 
