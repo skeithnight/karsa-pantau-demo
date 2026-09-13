@@ -119,6 +119,8 @@ BEGIN
     ON CONFLICT (idempotency_key) DO NOTHING;
 
     -- 6. Masukkan Log Kurva S Mingguan (Period Week 1 - 6)
+    DELETE FROM project_progress_logs WHERE project_id = v_project_id;
+
     INSERT INTO project_progress_logs (project_id, period_week, log_date, planned_progress_pct, actual_progress_pct, earned_value, actual_cost, cpi, spi, eac, reported_by, notes)
     VALUES
     (v_project_id, 1, (now() - INTERVAL '50 days')::date, 5.0, 5.5, 134832500, 130000000, 1.037, 1.100, 2400000000, v_user_id, 'Mobilisasi tim & pengiriman material mounting tahap 1'),
@@ -126,14 +128,7 @@ BEGIN
     (v_project_id, 3, (now() - INTERVAL '36 days')::date, 30.0, 28.5, 698677500, 700000000, 0.998, 0.950, 2460000000, v_user_id, 'Kedatangan modul solar bifacial di site cikarang'),
     (v_project_id, 4, (now() - INTERVAL '29 days')::date, 48.0, 46.0, 1127690000, 1120000000, 1.006, 0.958, 2440000000, v_user_id, 'Pemasangan modul solar dan perakitan inverter 100 kW'),
     (v_project_id, 5, (now() - INTERVAL '22 days')::date, 65.0, 64.0, 1568960000, 1540000000, 1.018, 0.984, 2425000000, v_user_id, 'Pengkabelan string DC combiner dan penarikan kabel AC'),
-    (v_project_id, 6, (now() - INTERVAL '15 days')::date, 75.0, 74.0, 1814110000, 1765000000, 1.028, 0.986, 2415000000, v_user_id, 'Pemasangan ACDB panel dan grounding sistem proteksi petir')
-    ON CONFLICT (project_id, period_week) DO UPDATE SET
-      planned_progress_pct = EXCLUDED.planned_progress_pct,
-      actual_progress_pct = EXCLUDED.actual_progress_pct,
-      earned_value = EXCLUDED.earned_value,
-      actual_cost = EXCLUDED.actual_cost,
-      cpi = EXCLUDED.cpi,
-      spi = EXCLUDED.spi;
+    (v_project_id, 6, (now() - INTERVAL '15 days')::date, 75.0, 74.0, 1814110000, 1765000000, 1.028, 0.986, 2415000000, v_user_id, 'Pemasangan ACDB panel dan grounding sistem proteksi petir');
 
   END IF;
 
