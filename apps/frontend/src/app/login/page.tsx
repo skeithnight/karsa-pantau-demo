@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sun, Shield, ArrowRight, Lock, Mail, UserCheck } from 'lucide-react';
-import { apiRequest, setAuthToken } from '../../lib/api';
+import { apiRequest, setAuthToken, setActiveOrganization } from '../../lib/api';
+import Link from 'next/link';
 
 const DEMO_ACCOUNTS = [
   { role: 'Project Manager (PM)', email: 'pm@karsapantau.id', name: 'Budi Santoso' },
@@ -30,6 +31,12 @@ export default function LoginPage() {
       });
       setAuthToken(res.accessToken);
       localStorage.setItem('karsa_user', JSON.stringify(res.user));
+      if (res.activeOrganization) {
+        setActiveOrganization(res.activeOrganization);
+      }
+      if (res.organizations) {
+        localStorage.setItem('karsa_user_orgs', JSON.stringify(res.organizations));
+      }
       router.push('/projects');
     } catch (err) {
       // Fallback untuk demo jika backend belum running
@@ -170,6 +177,22 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* B2B SaaS Onboarding Link */}
+        <div className="pt-4 border-t border-slate-800 text-center space-y-2">
+          <p className="text-xs text-slate-400">
+            Perusahaan kontraktor baru?{' '}
+            <Link href="/register" className="text-sky-400 hover:text-sky-300 font-semibold underline underline-offset-4">
+              Daftar & Mulai Trial 14 Hari
+            </Link>
+          </p>
+          <p className="text-[11px] text-slate-500">
+            Ingin melihat rincian fitur?{' '}
+            <Link href="/pricing" className="text-slate-400 hover:text-slate-300 underline">
+              Lihat Paket & Harga
+            </Link>
+          </p>
         </div>
       </div>
     </div>

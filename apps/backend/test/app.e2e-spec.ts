@@ -376,4 +376,112 @@ describe('Karsa Pantau End-to-End (E2E) Critical Business Scenarios', () => {
       expect(res.body.evmMetrics.estimateAtCompletion).toBeGreaterThan(0);
     });
   });
+
+  describe('9. Scenario 7: B2B Multi-Tenancy & Data Isolation', () => {
+    let orgAId: string;
+    let orgBId: string;
+    let orgAProjectId: string;
+
+    it('Admin Perusahaan A mendaftar dan membuat organisasi "PT Surya Nusantara A"', async () => {
+      // 1. Create Org A
+      const orgRes = await request(app.getHttpServer())
+        .post('/api/v1/organizations')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .send({ name: 'PT Surya Nusantara A' })
+        .expect(201);
+
+      expect(orgRes.body.name).toBe('PT Surya Nusantara A');
+      expect(orgRes.body.currentPlan).toContain('PRO');
+      orgAId = orgRes.body.id;
+
+      // 2. Admin A creates project in Org A
+      const projA = await request(app.getHttpServer())
+        .post('/api/v1/projects')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgAId)
+        .send({
+          name: 'PLTS Rahasia Perusahaan A 10MW',
+          location: 'Kupang, NTT',
+          capacityMw: 10.0,
+        })
+        .expect(201);
+
+      orgAProjectId = projA.body.id;
+      expect(projA.body.name).toBe('PLTS Rahasia Perusahaan A 10MW');
+    });
+
+    it('Perusahaan B membuat organisasi baru dan dilarang melihat proyek milik Perusahaan A (Strict Isolation)', async () => {
+      // 1. Create Org B
+      const orgRes = await request(app.getHttpServer())
+        .post('/api/v1/organizations')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .send({ name: 'PT Energi Hijau B' })
+        .expect(201);
+
+      orgBId = orgRes.body.id;
+
+      // 2. Query projects with Org B context -> proyek Perusahaan A tidak boleh muncul
+      const listRes = await request(app.getHttpServer())
+        .get('/api/v1/projects')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgBId)
+        .expect(200);
+
+      const foundA = listRes.body.data.find((p: any) => p.id === orgAProjectId);
+      expect(foundA).toBeUndefined();
+
+      // 3. Coba akses langsung proyek A menggunakan context Org B -> harus HTTP 404
+      await request(app.getHttpServer())
+        .get(`/api/v1/projects/${orgAProjectId}`)
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgBId)
+        .expect(404);
+    });
+
+    it('Perusahaan A dapat memantau kuota pemakaian langganan aktif (Trial 14 Hari)', async () => {
+      const usageRes = await request(app.getHttpServer())
+        .get('/api/v1/subscriptions/usage')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgAId)
+        .expect(200);
+
+      expect(usageRes.body.planCode).toBe('PRO');
+      expect(usageRes.body.projectsUsed).toBe(1);
+      expect(usageRes.body.daysRemaining).toBeGreaterThan(0);
+      expect(usageRes.body.isTrial).toBe(true);
+    });
+
+    it('Perusahaan A melakukan checkout upgrade paket Starter dan verifikasi aktivasi setelah pembayaran', async () => {
+      // 1. Checkout
+      const checkoutRes = await request(app.getHttpServer())
+        .post('/api/v1/subscriptions/checkout')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgAId)
+        .send({ planCode: 'STARTER', billingCycle: 'monthly' })
+        .expect(201);
+
+      expect(checkoutRes.body.invoice).toBeDefined();
+      expect(checkoutRes.body.invoice.amount).toBe(1500000);
+      const invoiceId = checkoutRes.body.invoice.id;
+
+      // 2. Konfirmasi pembayaran
+      const confirmRes = await request(app.getHttpServer())
+        .post(`/api/v1/subscriptions/invoices/${invoiceId}/confirm`)
+        .set('Authorization', `Bearer ${pmToken}`)
+        .send({ paymentProofUrl: 'https://storage/bukti-transfer-bca.jpg' })
+        .expect(201);
+
+      expect(confirmRes.body.status).toBe('paid');
+
+      // 3. Verifikasi riwayat invoice
+      const invListRes = await request(app.getHttpServer())
+        .get('/api/v1/subscriptions/invoices')
+        .set('Authorization', `Bearer ${pmToken}`)
+        .set('X-Organization-Id', orgAId)
+        .expect(200);
+
+      expect(invListRes.body.length).toBeGreaterThanOrEqual(1);
+      expect(invListRes.body[0].status).toBe('paid');
+    });
+  });
 });

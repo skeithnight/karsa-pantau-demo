@@ -7,12 +7,16 @@ import { RabModule } from './modules/rab/rab.module';
 import { ActualsModule } from './modules/actuals/actuals.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { ManpowerModule } from './modules/manpower/manpower.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 
 @Module({
   imports: [
     DatabaseModule,
     HealthModule,
     AuthModule,
+    OrganizationsModule,
+    SubscriptionsModule,
     ProjectsModule,
     RabModule,
     ActualsModule,

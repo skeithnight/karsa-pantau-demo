@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { ProjectStatus } from '@karsa/shared-types';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly subscriptionsService: SubscriptionsService,
+  ) {}
 
-  async findAll(page = 1, limit = 20, status?: string) {
+  async findAll(page = 1, limit = 20, status?: string, organizationId?: string) {
     const offset = (page - 1) * limit;
     let query = `
       SELECT p.*,
@@ -24,17 +28,34 @@ export class ProjectsService {
       ) pr ON pr.project_id = p.id
     `;
     const params: any[] = [];
+    const whereClauses: string[] = [];
+
+    if (organizationId) {
+      params.push(organizationId);
+      whereClauses.push(`p.organization_id = $${params.length}`);
+    }
 
     if (status) {
       params.push(status);
-      query += ` WHERE p.status = $${params.length}`;
+      whereClauses.push(`p.status = $${params.length}`);
+    }
+
+    if (whereClauses.length > 0) {
+      query += ` WHERE ${whereClauses.join(' AND ')}`;
     }
 
     query += ` GROUP BY p.id, r.total_amount, pr.actual_progress_pct ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(limit, offset);
 
     const res = await this.db.query(query, params);
-    const countRes = await this.db.query('SELECT COUNT(*) FROM projects');
+
+    let countQuery = 'SELECT COUNT(*) FROM projects';
+    const countParams: any[] = [];
+    if (organizationId) {
+      countParams.push(organizationId);
+      countQuery += ` WHERE organization_id = $1`;
+    }
+    const countRes = await this.db.query(countQuery, countParams);
 
     return {
       data: res.rows.map((row) => ({
@@ -44,6 +65,7 @@ export class ProjectsService {
         capacityMw: parseFloat(row.capacity_mw),
         targetCodDate: row.target_cod_date,
         status: row.status,
+        organizationId: row.organization_id,
         totalRab: parseFloat(row.total_rab || 0),
         totalActual: parseFloat(row.total_actual || 0),
         variancePct:
@@ -59,9 +81,9 @@ export class ProjectsService {
     };
   }
 
-  async findOne(id: string) {
-    const res = await this.db.query(
-      `SELECT p.*,
+  async findOne(id: string, organizationId?: string) {
+    let query = `
+      SELECT p.*,
         COALESCE(r.total_amount, 0) as total_rab,
         COALESCE(SUM(ae.total_actual_amount), 0) as total_actual,
         COALESCE(pr.actual_progress_pct, 0) as physical_progress_pct
@@ -75,9 +97,17 @@ export class ProjectsService {
          ORDER BY project_id, period_week DESC
        ) pr ON pr.project_id = p.id
        WHERE p.id = $1
-       GROUP BY p.id, r.total_amount, pr.actual_progress_pct`,
-      [id],
-    );
+    `;
+    const params: any[] = [id];
+
+    if (organizationId) {
+      params.push(organizationId);
+      query += ` AND p.organization_id = $2`;
+    }
+
+    query += ` GROUP BY p.id, r.total_amount, pr.actual_progress_pct`;
+
+    const res = await this.db.query(query, params);
 
     const project = res.rows[0];
     if (!project) {
@@ -91,6 +121,7 @@ export class ProjectsService {
       capacityMw: parseFloat(project.capacity_mw),
       targetCodDate: project.target_cod_date,
       status: project.status,
+      organizationId: project.organization_id,
       totalRab: parseFloat(project.total_rab || 0),
       totalActual: parseFloat(project.total_actual || 0),
       variancePct:
@@ -104,12 +135,32 @@ export class ProjectsService {
     };
   }
 
-  async create(data: { name: string; location: string; capacityMw: number; targetCodDate?: string }, userId: string) {
+  async create(
+    data: { name: string; location: string; capacityMw: number; targetCodDate?: string },
+    userId: string,
+    organizationId?: string,
+  ) {
+    let effectiveOrgId = organizationId;
+
+    // Jika organizationId tidak diberikan, cari organisasi default milik user
+    if (!effectiveOrgId) {
+      const orgRes = await this.db.query<any>(
+        `SELECT organization_id FROM organization_members WHERE user_id = $1 AND is_active = true ORDER BY created_at ASC LIMIT 1`,
+        [userId],
+      );
+      effectiveOrgId = orgRes.rows[0]?.organization_id;
+    }
+
+    // Jika organisasi ditemukan, periksa kuota langganan sebelum create
+    if (effectiveOrgId) {
+      await this.subscriptionsService.checkProjectQuota(effectiveOrgId);
+    }
+
     const res = await this.db.query(
-      `INSERT INTO projects (name, location, capacity_mw, target_cod_date, status, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO projects (name, location, capacity_mw, target_cod_date, status, created_by, organization_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [data.name, data.location, data.capacityMw, data.targetCodDate || null, ProjectStatus.PLANNING, userId],
+      [data.name, data.location, data.capacityMw, data.targetCodDate || null, ProjectStatus.PLANNING, userId, effectiveOrgId || null],
     );
     return res.rows[0];
   }

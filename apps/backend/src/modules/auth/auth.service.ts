@@ -36,6 +36,20 @@ export class AuthService {
       expiresIn: '7d',
     });
 
+    // Ambil organisasi yang diikuti user
+    const orgRes = await this.db.query(
+      `SELECT o.id, o.name, o.slug, o.logo_url as "logoUrl", o.status, om.role as "myRole",
+              (SELECT p.name FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.organization_id = o.id ORDER BY s.created_at DESC LIMIT 1) as "currentPlan"
+       FROM organizations o
+       JOIN organization_members om ON o.id = om.organization_id
+       WHERE om.user_id = $1 AND om.is_active = true
+       ORDER BY o.created_at ASC`,
+      [user.id],
+    );
+
+    const organizations = orgRes.rows;
+    const activeOrganization = organizations[0] || null;
+
     return {
       accessToken,
       refreshToken,
@@ -45,6 +59,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
+      organizations,
+      activeOrganization,
     };
   }
 

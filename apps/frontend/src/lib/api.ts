@@ -15,6 +15,25 @@ export function clearAuthToken() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('karsa_token');
     localStorage.removeItem('karsa_user');
+    localStorage.removeItem('karsa_active_org');
+    localStorage.removeItem('karsa_user_orgs');
+  }
+}
+
+export function getActiveOrganization(): any | null {
+  if (typeof window === 'undefined') return null;
+  const orgStr = localStorage.getItem('karsa_active_org');
+  if (!orgStr) return null;
+  try {
+    return JSON.parse(orgStr);
+  } catch {
+    return null;
+  }
+}
+
+export function setActiveOrganization(org: any) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('karsa_active_org', JSON.stringify(org));
   }
 }
 
@@ -23,6 +42,8 @@ export async function apiRequest<T = any>(
   options: RequestInit & { idempotencyKey?: string } = {},
 ): Promise<T> {
   const token = getAuthToken();
+  const activeOrg = getActiveOrganization();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -30,6 +51,10 @@ export async function apiRequest<T = any>(
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (activeOrg?.id) {
+    headers['X-Organization-Id'] = activeOrg.id;
   }
 
   if (options.idempotencyKey) {

@@ -174,3 +174,138 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
 }
+
+// ==========================================
+// B2B Multi-Tenant SaaS & Subscription Types
+// ==========================================
+
+export enum OrganizationStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  TRIAL = 'trial',
+}
+
+export enum SubscriptionStatus {
+  TRIALING = 'trialing',
+  ACTIVE = 'active',
+  PAST_DUE = 'past_due',
+  CANCELED = 'canceled',
+  EXPIRED = 'expired',
+}
+
+export enum BillingCycle {
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
+export enum PlanCode {
+  TRIAL = 'TRIAL',
+  STARTER = 'STARTER',
+  PRO = 'PRO',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl?: string | null;
+  status: OrganizationStatus;
+  createdAt: string;
+  updatedAt: string;
+  memberCount?: number;
+  activeProjectsCount?: number;
+  currentPlan?: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  role: UserRole;
+  isActive: boolean;
+  userName?: string;
+  userEmail?: string;
+  createdAt: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  code: PlanCode;
+  name: string;
+  description?: string | null;
+  priceMonthly: number;
+  priceYearly: number;
+  maxProjects: number;
+  maxUsers: number;
+  maxStorageGb: number;
+  aiQuotaPerMonth: number;
+  features: Record<string, boolean>;
+  isActive: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  organizationId: string;
+  planId: string;
+  plan?: SubscriptionPlan;
+  status: SubscriptionStatus;
+  billingCycle: BillingCycle;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialEndsAt?: string | null;
+  canceledAt?: string | null;
+  paymentGatewayRef?: string | null;
+}
+
+export interface SubscriptionUsage {
+  planCode: PlanCode;
+  planName: string;
+  status: SubscriptionStatus;
+  billingCycle: BillingCycle;
+  currentPeriodEnd: string;
+  daysRemaining: number;
+  projectsUsed: number;
+  projectsLimit: number;
+  usersUsed: number;
+  usersLimit: number;
+  aiQuotaUsed: number;
+  aiQuotaLimit: number;
+  isTrial: boolean;
+}
+
+export interface SubscriptionInvoice {
+  id: string;
+  organizationId: string;
+  subscriptionId: string;
+  invoiceNumber: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'failed' | 'canceled';
+  paymentMethod?: string | null;
+  paymentProofUrl?: string | null;
+  paidAt?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateOrganizationDto {
+  name: string;
+  slug?: string;
+}
+
+export interface InviteMemberDto {
+  email: string;
+  name?: string;
+  role: UserRole;
+}
+
+export interface CheckoutPlanDto {
+  planCode: PlanCode;
+  billingCycle: BillingCycle;
+  paymentMethod?: string;
+}
+
+export interface ConfirmInvoiceDto {
+  invoiceId: string;
+  paymentProofUrl?: string;
+}

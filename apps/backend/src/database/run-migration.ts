@@ -14,11 +14,18 @@ async function runMigration() {
   const pool = new Pool({ connectionString });
 
   try {
-    const sqlPath = path.join(__dirname, 'migrations', '001_initial_schema.sql');
-    const sql = fs.readFileSync(sqlPath, 'utf8');
+    const migrationsDir = path.join(__dirname, 'migrations');
+    const files = fs.readdirSync(migrationsDir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
 
-    await pool.query(sql);
-    console.log('Migrasi skema database 001_initial_schema.sql berhasil dijalankan!');
+    for (const file of files) {
+      console.log(`Menjalankan file migrasi: ${file}...`);
+      const sqlPath = path.join(migrationsDir, file);
+      const sql = fs.readFileSync(sqlPath, 'utf8');
+      await pool.query(sql);
+      console.log(`✓ Migrasi ${file} berhasil dijalankan!`);
+    }
   } catch (error) {
     console.error('Gagal menjalankan migrasi:', error);
     process.exit(1);
