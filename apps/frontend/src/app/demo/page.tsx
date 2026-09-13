@@ -47,7 +47,7 @@ export default function DemoLauncherPage() {
         setStatusText('Memuat data proyek PLTS contoh...');
         // 3. Cari proyek demo yang tersedia
         const projectsRes = await apiRequest<{ data: any[]; total: number }>('/projects?limit=5');
-        const demoProj = projectsRes.data?.find((p) => p.id === 'd3m00000-0000-0000-0000-000000000500') 
+        const demoProj = projectsRes.data?.find((p) => p.id === 'de300000-0000-0000-0000-000000000500') 
           || projectsRes.data?.[0];
 
         if (demoProj?.id) {

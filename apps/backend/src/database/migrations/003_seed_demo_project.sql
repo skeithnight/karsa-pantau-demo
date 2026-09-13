@@ -30,7 +30,7 @@ BEGIN
   IF v_project_id IS NULL THEN
     INSERT INTO projects (id, name, location, capacity_mw, target_cod_date, status, created_by, organization_id)
     VALUES (
-      'd3m00000-0000-0000-0000-000000000500',
+      'de300000-0000-0000-0000-000000000500',
       'PLTS Atap Industri 500 kWp (Demo)',
       'Kawasan Industri GIIC Cikarang, Jawa Barat',
       0.500,
