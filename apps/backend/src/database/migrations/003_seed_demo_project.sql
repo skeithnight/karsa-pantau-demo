@@ -98,42 +98,42 @@ BEGIN
     ) RETURNING id INTO v_item_kabel;
 
     -- 5. Masukkan Entri Realisasi Biaya Lapangan (Actual Entries)
-    INSERT INTO actual_entries (project_id, rab_item_id, amount, entry_date, description, payment_status, receipt_file_url, created_by, idempotency_key)
+    INSERT INTO actual_entries (rab_item_id, item_code, qty, actual_unit_price, vendor, invoice_number, description, entered_by, source, idempotency_key, entry_date)
     VALUES 
     (
-      v_project_id, v_item_modul, 750000000.00, now() - INTERVAL '45 days',
-      'Down Payment 50% Pengadaan Modul Surya 910 unit (Invoice Trina Solar #TS-2026-891)',
-      'PAID', 'https://storage.karsapantau.com/receipts/demo-pv-invoice.pdf', v_user_id, 'demo-act-1'
+      v_item_modul, 'PV-550W-BIFACIAL', 455, 1648351.65, 'PT Trina Solar Indonesia', 'INV-TS-2026-891',
+      'Down Payment 50% Pengadaan Modul Surya 910 unit', v_user_id, 'manual', 'demo-act-1', (now() - INTERVAL '45 days')::date
     ),
     (
-      v_project_id, v_item_inverter, 375000000.00, now() - INTERVAL '30 days',
-      'Pelunasan Pembelian 5 Unit Inverter Sungrow 100 kW (Surat Jalan #SG-9921)',
-      'PAID', 'https://storage.karsapantau.com/receipts/demo-inv-invoice.pdf', v_user_id, 'demo-act-2'
+      v_item_inverter, 'INV-100KW-STRING', 5, 75000000.00, 'Sungrow Power Supply Ltd', 'SJ-SG-9921',
+      'Pelunasan Pembelian 5 Unit Inverter Sungrow 100 kW', v_user_id, 'ocr', 'demo-act-2', (now() - INTERVAL '30 days')::date
     ),
     (
-      v_project_id, v_item_mounting, 225000000.00, now() - INTERVAL '20 days',
-      'Pembayaran Material Rel Rail & Clamp Aluminium Rooftop (Kuitansi Logam #LM-412)',
-      'PAID', 'https://storage.karsapantau.com/receipts/demo-mount-invoice.pdf', v_user_id, 'demo-act-3'
+      v_item_mounting, 'MOUNT-ROOF-ALU', 500, 450000.00, 'PT Logam Aluminium Utama', 'KUIT-LM-412',
+      'Pembayaran Material Rel Rail & Clamp Aluminium Rooftop', v_user_id, 'manual', 'demo-act-3', (now() - INTERVAL '20 days')::date
     ),
     (
-      v_project_id, v_item_kabel, 150000000.00, now() - INTERVAL '10 days',
-      'Termin 1 Jasa Elektrikal & Pengkabelan DC Lapangan',
-      'APPROVED', 'https://storage.karsapantau.com/receipts/demo-elec-invoice.pdf', v_user_id, 'demo-act-4'
+      v_item_kabel, 'ELEC-ACDC-COMM', 0.428, 350000000.00, 'CV Sinar Elektrikal Nusantara', 'TERM-EL-01',
+      'Termin 1 Jasa Elektrikal & Pengkabelan DC Lapangan', v_user_id, 'ocr', 'demo-act-4', (now() - INTERVAL '10 days')::date
     )
     ON CONFLICT (idempotency_key) DO NOTHING;
 
     -- 6. Masukkan Log Kurva S Mingguan (Period Week 1 - 6)
-    INSERT INTO project_progress_logs (project_id, period_week, planned_progress_pct, actual_progress_pct, log_date, notes)
+    INSERT INTO project_progress_logs (project_id, period_week, log_date, planned_progress_pct, actual_progress_pct, earned_value, actual_cost, cpi, spi, eac, reported_by, notes)
     VALUES
-    (v_project_id, 1, 5.0, 5.5, (now() - INTERVAL '50 days')::date, 'Mobilisasi tim & pengiriman material mounting tahap 1'),
-    (v_project_id, 2, 15.0, 16.0, (now() - INTERVAL '43 days')::date, 'Pemasangan roof clamp dan rail selesai 80%'),
-    (v_project_id, 3, 30.0, 28.5, (now() - INTERVAL '36 days')::date, 'Kedatangan modul solar bifacial di site cikarang'),
-    (v_project_id, 4, 48.0, 46.0, (now() - INTERVAL '29 days')::date, 'Pemasangan modul solar dan perakitan inverter 100 kW'),
-    (v_project_id, 5, 65.0, 64.0, (now() - INTERVAL '22 days')::date, 'Pengkabelan string DC combiner dan penarikan kabel AC'),
-    (v_project_id, 6, 75.0, 74.0, (now() - INTERVAL '15 days')::date, 'Pemasangan ACDB panel dan grounding sistem proteksi petir')
+    (v_project_id, 1, (now() - INTERVAL '50 days')::date, 5.0, 5.5, 134832500, 130000000, 1.037, 1.100, 2400000000, v_user_id, 'Mobilisasi tim & pengiriman material mounting tahap 1'),
+    (v_project_id, 2, (now() - INTERVAL '43 days')::date, 15.0, 16.0, 392240000, 385000000, 1.018, 1.066, 2420000000, v_user_id, 'Pemasangan roof clamp dan rail selesai 80%'),
+    (v_project_id, 3, (now() - INTERVAL '36 days')::date, 30.0, 28.5, 698677500, 700000000, 0.998, 0.950, 2460000000, v_user_id, 'Kedatangan modul solar bifacial di site cikarang'),
+    (v_project_id, 4, (now() - INTERVAL '29 days')::date, 48.0, 46.0, 1127690000, 1120000000, 1.006, 0.958, 2440000000, v_user_id, 'Pemasangan modul solar dan perakitan inverter 100 kW'),
+    (v_project_id, 5, (now() - INTERVAL '22 days')::date, 65.0, 64.0, 1568960000, 1540000000, 1.018, 0.984, 2425000000, v_user_id, 'Pengkabelan string DC combiner dan penarikan kabel AC'),
+    (v_project_id, 6, (now() - INTERVAL '15 days')::date, 75.0, 74.0, 1814110000, 1765000000, 1.028, 0.986, 2415000000, v_user_id, 'Pemasangan ACDB panel dan grounding sistem proteksi petir')
     ON CONFLICT (project_id, period_week) DO UPDATE SET
       planned_progress_pct = EXCLUDED.planned_progress_pct,
-      actual_progress_pct = EXCLUDED.actual_progress_pct;
+      actual_progress_pct = EXCLUDED.actual_progress_pct,
+      earned_value = EXCLUDED.earned_value,
+      actual_cost = EXCLUDED.actual_cost,
+      cpi = EXCLUDED.cpi,
+      spi = EXCLUDED.spi;
 
   END IF;
 
