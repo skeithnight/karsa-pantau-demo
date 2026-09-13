@@ -28,7 +28,7 @@ export class AiChatService {
 
     try {
       const projRes = await this.db.query(
-        `SELECT p.id, p.name, p.capacity_kwp, p.status, p.organization_id,
+        `SELECT p.id, p.name, p.capacity_mw, p.status, p.organization_id,
                 COALESCE(r.total_amount, 0) as total_rab,
                 COALESCE(SUM(ae.total_actual_amount), 0) as total_actual
          FROM projects p
@@ -47,11 +47,12 @@ export class AiChatService {
         const totalActual = Number(p.total_actual);
         const variance = totalActual - totalRab;
         const variancePct = totalRab > 0 ? ((variance / totalRab) * 100).toFixed(1) : '0';
+        const capacityKwp = p.capacity_mw ? Number(p.capacity_mw) * 1000 : 0;
 
         projectContext = `
 Informasi Proyek:
 - Nama: ${p.name}
-- Kapasitas: ${p.capacity_kwp} kWp
+- Kapasitas: ${capacityKwp} kWp (${p.capacity_mw} MW)
 - Status: ${p.status}
 - Total RAB: Rp ${totalRab.toLocaleString('id-ID')}
 - Realisasi Saat Ini: Rp ${totalActual.toLocaleString('id-ID')}
