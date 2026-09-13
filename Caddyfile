@@ -1,6 +1,17 @@
 {
     email {$SSL_EMAIL:admin@karsapantau.id}
 }
+ai.{$DOMAIN:app.karsapantau.id} {
+    encode zstd gzip
+
+    # 9Router AI Proxy & Management Dashboard
+    reverse_proxy nine-router:20128 {
+        flush_interval -1
+        transport http {
+            response_header_timeout 600s
+        }
+    }
+}
 
 {$DOMAIN:app.karsapantau.id} {
     # Automatic Gzip & Zstandard compression

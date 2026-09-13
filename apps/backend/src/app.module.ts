@@ -9,6 +9,7 @@ import { ProgressModule } from './modules/progress/progress.module';
 import { ManpowerModule } from './modules/manpower/manpower.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
     ActualsModule,
     ProgressModule,
     ManpowerModule,
+    AiModule,
   ],
 })
 export class AppModule {}
