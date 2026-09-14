@@ -36,6 +36,17 @@ export class AiController {
     return this.semanticSearchService.searchPriceHistory(query || '', orgId);
   }
 
+  @Get('price-guardrail')
+  async checkPriceGuardrail(
+    @Query('description') description: string,
+    @Query('unitPrice') unitPrice: string,
+    @Query('unit') unit?: string,
+    @Query('category') category?: string,
+  ) {
+    const price = parseFloat(unitPrice || '0');
+    return this.semanticSearchService.checkPriceGuardrail(description || '', price, unit, category);
+  }
+
   @Post('anomalies/:projectId')
   async triggerAnomalyDetectionPost(
     @Param('projectId') projectId: string,

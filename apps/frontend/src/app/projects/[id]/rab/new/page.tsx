@@ -19,6 +19,12 @@ import {
   FileSpreadsheet,
   UploadCloud,
   Download,
+  ShieldAlert,
+  ShieldCheck,
+  SlidersHorizontal,
+  Eye,
+  X,
+  Check,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { WorkPackage, CostCategory } from '@karsa/shared-types';
@@ -35,6 +41,9 @@ interface BuilderItem {
   unit: string;
   unitPrice: number;
   subtotal: number;
+  guardrailNote?: string;
+  isAnomaly?: boolean;
+  riskLevel?: string;
 }
 
 export default function RabBuilderPage() {
@@ -53,15 +62,37 @@ export default function RabBuilderPage() {
   const [unit, setUnit] = useState('unit');
   const [unitPrice, setUnitPrice] = useState<number | ''>('');
 
+  // Historical Price Guardrail State
+  const [guardrailResult, setGuardrailResult] = useState<any | null>(null);
+  const [guardrailLoading, setGuardrailLoading] = useState(false);
+  const [justificationNote, setJustificationNote] = useState('');
+
   // AI Semantic Search State
   const [aiSearchQuery, setAiSearchQuery] = useState('');
   const [aiSearching, setAiSearching] = useState(false);
   const [aiResults, setAiResults] = useState<any | null>(null);
 
-  // Excel Ingestion State
+  // Explainable AI BOQ Ingestion State
   const [excelImporting, setExcelImporting] = useState(false);
   const [excelSuccessMsg, setExcelSuccessMsg] = useState<string | null>(null);
   const [excelErrorMsg, setExcelErrorMsg] = useState<string | null>(null);
+
+  const [showMappingModal, setShowMappingModal] = useState(false);
+  const [rawExcelRows, setRawExcelRows] = useState<any[]>([]);
+  const [detectedHeaders, setDetectedHeaders] = useState<string[]>([]);
+  const [fieldMappings, setFieldMappings] = useState({
+    wbsCode: '',
+    itemCode: '',
+    description: '',
+    volume: '',
+    unit: '',
+    unitPrice: '',
+    category: '',
+    workPackage: '',
+  });
+  const [confidenceScores, setConfidenceScores] = useState<{ [key: string]: number }>({});
+  const [overallConfidence, setOverallConfidence] = useState<number>(0);
+
 
   const [items, setItems] = useState<BuilderItem[]>([
     {
@@ -142,7 +173,31 @@ export default function RabBuilderPage() {
     document.body.removeChild(link);
   };
 
-  // Handle Excel / CSV File Parsing
+  // Live Guardrail Historical Price Evaluation
+  React.useEffect(() => {
+    if (!description.trim() || typeof unitPrice !== 'number' || unitPrice <= 0) {
+      setGuardrailResult(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setGuardrailLoading(true);
+      try {
+        const res = await apiRequest(
+          `/ai/price-guardrail?description=${encodeURIComponent(description)}&unitPrice=${unitPrice}&unit=${encodeURIComponent(unit)}`
+        );
+        setGuardrailResult(res);
+      } catch (err) {
+        console.error('Price guardrail check error:', err);
+      } finally {
+        setGuardrailLoading(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [description, unitPrice, unit]);
+
+  // Handle Excel / CSV File Parsing with AI Column Detection
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -166,65 +221,65 @@ export default function RabBuilderPage() {
           return;
         }
 
-        const newItems: BuilderItem[] = [];
-        let index = items.length + 1;
+        const headers = Object.keys(jsonRows[0] || {});
+        setDetectedHeaders(headers);
+        setRawExcelRows(jsonRows);
 
-        for (const row of jsonRows) {
-          // Flexible key lookup
-          const keys = Object.keys(row);
-          const findKey = (candidates: string[]) => {
-            return keys.find((k) => candidates.some((c) => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(c)));
-          };
+        // Intelligent auto-detection + confidence scoring
+        const findMatch = (candidates: string[]) => {
+          let bestMatch = '';
+          let score = 0;
+          for (const h of headers) {
+            const cleanH = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+            for (const c of candidates) {
+              if (cleanH === c) {
+                return { header: h, score: 98 };
+              } else if (cleanH.includes(c)) {
+                if (score < 88) { bestMatch = h; score = 88; }
+              }
+            }
+          }
+          return { header: bestMatch || (headers[0] || ''), score: score || 45 };
+        };
 
-          const wbsK = findKey(['wbs', 'kodewbs']) || '';
-          const codeK = findKey(['kodeitem', 'itemcode', 'kode', 'item']) || '';
-          const descK = findKey(['deskripsi', 'uraian', 'pekerjaan', 'itempekerjaan', 'namabarang']) || '';
-          const volK = findKey(['volume', 'vol', 'qty', 'kuantitas', 'jumlah']) || '';
-          const unitK = findKey(['satuan', 'unit', 'sat']) || '';
-          const priceK = findKey(['hargasatuan', 'harga', 'tarif', 'unitprice', 'price']) || '';
-          const catK = findKey(['kategori', 'category', 'jenis']) || '';
-          const wpK = findKey(['paket', 'workpackage', 'divisi']) || '';
+        const wbsMatch = findMatch(['wbs', 'kodewbs']);
+        const codeMatch = findMatch(['kodeitem', 'itemcode', 'kode', 'item']);
+        const descMatch = findMatch(['deskripsi', 'uraian', 'pekerjaan', 'itempekerjaan', 'namabarang', 'keterangan']);
+        const volMatch = findMatch(['volume', 'vol', 'qty', 'kuantitas', 'jumlah']);
+        const unitMatch = findMatch(['satuan', 'unit', 'sat']);
+        const priceMatch = findMatch(['hargasatuan', 'harga', 'tarif', 'unitprice', 'price']);
+        const catMatch = findMatch(['kategori', 'category', 'jenis']);
+        const wpMatch = findMatch(['paket', 'workpackage', 'divisi']);
 
-          const descVal = row[descK] || '';
-          if (!descVal || String(descVal).trim() === '') continue;
+        const newMappings = {
+          wbsCode: wbsMatch.header,
+          itemCode: codeMatch.header,
+          description: descMatch.header,
+          volume: volMatch.header,
+          unit: unitMatch.header,
+          unitPrice: priceMatch.header,
+          category: catMatch.header,
+          workPackage: wpMatch.header,
+        };
 
-          const volVal = parseFloat(String(row[volK]).replace(/[^0-9.-]/g, '')) || 1;
-          const priceVal = parseFloat(String(row[priceK]).replace(/[^0-9.-]/g, '')) || 0;
+        const scores: { [key: string]: number } = {
+          description: descMatch.score,
+          volume: volMatch.score,
+          unitPrice: priceMatch.score,
+          unit: unitMatch.score,
+          wbsCode: wbsMatch.score,
+          itemCode: codeMatch.score,
+          category: catMatch.score,
+          workPackage: wpMatch.score,
+        };
 
-          // Categorization
-          let assignedCat = CostCategory.MATERIAL;
-          const catStr = String(row[catK] || '').toLowerCase();
-          if (catStr.includes('upah') || catStr.includes('tenaga') || catStr.includes('labor')) assignedCat = CostCategory.UPAH;
-          else if (catStr.includes('alat') || catStr.includes('sewa') || catStr.includes('machin')) assignedCat = CostCategory.ALAT;
+        const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+        const avgScore = Math.round(totalScore / Object.keys(scores).length);
 
-          // Work Package
-          let assignedWp = WorkPackage.CIVIL;
-          const wpStr = String(row[wpK] || '').toUpperCase();
-          if (wpStr.includes('ELECTRICAL_AC') || wpStr.includes('AC')) assignedWp = WorkPackage.ELECTRICAL_AC;
-          else if (wpStr.includes('ELECTRICAL_DC') || wpStr.includes('DC') || wpStr.includes('SURYA') || wpStr.includes('SOLAR')) assignedWp = WorkPackage.ELECTRICAL_DC;
-          else if (wpStr.includes('SCADA')) assignedWp = WorkPackage.SCADA_MONITORING;
-
-          newItems.push({
-            id: `imp-${Date.now()}-${index++}`,
-            wbsCode: String(row[wbsK] || `${Math.floor(index / 10) + 1}.${index % 10}`).trim(),
-            itemCode: String(row[codeK] || `ITM-${index}`).trim(),
-            workPackage: assignedWp,
-            category: assignedCat,
-            description: String(descVal).trim(),
-            volume: volVal,
-            unit: String(row[unitK] || 'unit').trim(),
-            unitPrice: priceVal,
-            subtotal: volVal * priceVal,
-          });
-        }
-
-        if (newItems.length === 0) {
-          setExcelErrorMsg('Tidak ditemukan baris pekerjaan yang valid dalam file Excel.');
-        } else {
-          setItems((prev) => [...prev, ...newItems]);
-          setExcelSuccessMsg(`Berhasil mengimpor ${newItems.length} item pekerjaan dari file Excel/BOQ!`);
-          setTimeout(() => setExcelSuccessMsg(null), 6000);
-        }
+        setFieldMappings(newMappings);
+        setConfidenceScores(scores);
+        setOverallConfidence(avgScore);
+        setShowMappingModal(true);
       } catch (err: any) {
         console.error('Error parsing Excel:', err);
         setExcelErrorMsg(`Gagal memproses file Excel: ${err.message}`);
@@ -237,6 +292,56 @@ export default function RabBuilderPage() {
     reader.readAsArrayBuffer(file);
   };
 
+  const confirmImportedItems = () => {
+    if (!rawExcelRows || rawExcelRows.length === 0) return;
+
+    const newItems: BuilderItem[] = [];
+    let index = items.length + 1;
+
+    for (const row of rawExcelRows) {
+      const descVal = row[fieldMappings.description] || '';
+      if (!descVal || String(descVal).trim() === '') continue;
+
+      const volVal = parseFloat(String(row[fieldMappings.volume]).replace(/[^0-9.-]/g, '')) || 1;
+      const priceVal = parseFloat(String(row[fieldMappings.unitPrice]).replace(/[^0-9.-]/g, '')) || 0;
+
+      // Categorization
+      let assignedCat = CostCategory.MATERIAL;
+      const catStr = String(row[fieldMappings.category] || '').toLowerCase();
+      if (catStr.includes('upah') || catStr.includes('tenaga') || catStr.includes('labor')) assignedCat = CostCategory.UPAH;
+      else if (catStr.includes('alat') || catStr.includes('sewa') || catStr.includes('machin')) assignedCat = CostCategory.ALAT;
+
+      // Work Package
+      let assignedWp = WorkPackage.CIVIL;
+      const wpStr = String(row[fieldMappings.workPackage] || '').toUpperCase();
+      if (wpStr.includes('ELECTRICAL_AC') || wpStr.includes('AC')) assignedWp = WorkPackage.ELECTRICAL_AC;
+      else if (wpStr.includes('ELECTRICAL_DC') || wpStr.includes('DC') || wpStr.includes('SURYA') || wpStr.includes('SOLAR')) assignedWp = WorkPackage.ELECTRICAL_DC;
+      else if (wpStr.includes('SCADA')) assignedWp = WorkPackage.SCADA_MONITORING;
+
+      newItems.push({
+        id: `imp-${Date.now()}-${index++}`,
+        wbsCode: String(row[fieldMappings.wbsCode] || `${Math.floor(index / 10) + 1}.${index % 10}`).trim(),
+        itemCode: String(row[fieldMappings.itemCode] || `ITM-${index}`).trim(),
+        workPackage: assignedWp,
+        category: assignedCat,
+        description: String(descVal).trim(),
+        volume: volVal,
+        unit: String(row[fieldMappings.unit] || 'unit').trim(),
+        unitPrice: priceVal,
+        subtotal: volVal * priceVal,
+      });
+    }
+
+    if (newItems.length === 0) {
+      setExcelErrorMsg('Tidak ditemukan baris pekerjaan yang valid dalam file Excel.');
+    } else {
+      setItems((prev) => [...prev, ...newItems]);
+      setExcelSuccessMsg(`Berhasil memvalidasi dan mengimpor ${newItems.length} item pekerjaan dari file Excel/BOQ!`);
+      setTimeout(() => setExcelSuccessMsg(null), 6000);
+    }
+
+    setShowMappingModal(false);
+  };
 
   // Live calculation
   const currentSubtotal =
@@ -265,15 +370,21 @@ export default function RabBuilderPage() {
       unit,
       unitPrice: Number(unitPrice),
       subtotal: Number(volume) * Number(unitPrice),
+      guardrailNote: justificationNote.trim() || undefined,
+      isAnomaly: guardrailResult?.isAnomaly,
+      riskLevel: guardrailResult?.riskLevel,
     };
 
     setItems([...items, newItem]);
     setDescription('');
     setVolume('');
     setUnitPrice('');
+    setJustificationNote('');
+    setGuardrailResult(null);
   };
 
   const handleDeleteItem = (id: string) => {
+
     setItems(items.filter((i) => i.id !== id));
   };
 
@@ -643,6 +754,53 @@ export default function RabBuilderPage() {
               </div>
             </div>
 
+            {/* Historical Price Guardrail Indicator */}
+            {guardrailLoading && (
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <Loader2 className="w-3 h-3 animate-spin text-sky-400" />
+                <span>Mengecek deviasi harga terhadap katalog historis...</span>
+              </div>
+            )}
+
+            {guardrailResult && guardrailResult.isAnomaly && (
+              <div className={`p-2.5 rounded-lg border text-[11px] space-y-1.5 ${
+                guardrailResult.riskLevel === 'HIGH'
+                  ? 'bg-rose-950/80 border-rose-700 text-rose-200'
+                  : guardrailResult.riskLevel === 'MEDIUM'
+                  ? 'bg-amber-950/80 border-amber-700 text-amber-200'
+                  : 'bg-sky-950/80 border-sky-700 text-sky-200'
+              }`}>
+                <div className="flex items-start gap-1.5">
+                  <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="leading-snug">
+                    <span className="font-bold">
+                      {guardrailResult.riskLevel === 'HIGH' ? '🚨 Deviasi Kritis: ' : '⚠️ Guardrail Deviasi: '}
+                    </span>
+                    <span>{guardrailResult.message}</span>
+                  </div>
+                </div>
+                <div className="pt-1 border-t border-slate-700/50">
+                  <label className="block text-[10px] text-slate-300 font-semibold mb-1">
+                    Catatan Justifikasi Deviasi (Audit Kontrak):
+                  </label>
+                  <input
+                    type="text"
+                    value={justificationNote}
+                    onChange={(e) => setJustificationNote(e.target.value)}
+                    placeholder="Alasan: lokasi remote, spesifikasi khusus, dll..."
+                    className="w-full px-2 py-1 bg-slate-900/90 border border-slate-700 rounded text-[11px] text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {guardrailResult && !guardrailResult.isAnomaly && !guardrailLoading && (
+              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{guardrailResult.message}</span>
+              </div>
+            )}
+
             {/* Live Preview Subtotal */}
             <div className="p-3 rounded-lg bg-slate-900/90 border border-sky-900/40 text-xs">
               <span className="text-slate-400 block">Subtotal Item Ini:</span>
@@ -687,7 +845,15 @@ export default function RabBuilderPage() {
                   {items.map((it) => (
                     <tr key={it.id} className="hover:bg-slate-900/40">
                       <td className="py-2 px-2 font-mono text-sky-400">{it.wbsCode}</td>
-                      <td className="py-2 px-2 text-slate-200">{it.description}</td>
+                      <td className="py-2 px-2 text-slate-200">
+                        <div>{it.description}</div>
+                        {it.guardrailNote && (
+                          <div className="text-[10px] text-amber-300 font-mono flex items-center gap-1 mt-0.5">
+                            <ShieldAlert className="w-3 h-3 text-amber-400 shrink-0" />
+                            <span>Justifikasi: {it.guardrailNote}</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="py-2 px-2 text-right font-mono">
                         {it.volume.toLocaleString('id-ID')} {it.unit}
                       </td>
@@ -726,6 +892,161 @@ export default function RabBuilderPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal: Explainable AI BOQ Column Mapping (Human-in-the-Loop) */}
+      {showMappingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-800 flex items-start justify-between bg-slate-950/60">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-800">
+                    AI-Assisted, Human-Verified
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    overallConfidence >= 85
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                      : 'bg-amber-950 text-amber-300 border border-amber-800'
+                  }`}>
+                    Akurasi Deteksi: {overallConfidence}% ({overallConfidence >= 85 ? 'Tinggi' : 'Perlu Review'})
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5 text-sky-400" />
+                  Pemetaan Kolom BOQ Excel (Human-in-the-Loop)
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  AI telah memetakan kolom dari file Excel Anda. Tinjau skor keyakinan dan sesuaikan mapping bila diperlukan sebelum data dikunci.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowMappingModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-5 text-xs">
+              {/* Field Mapping Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { key: 'description', label: 'Deskripsi Pekerjaan *', desc: 'Uraian item atau nama barang' },
+                  { key: 'volume', label: 'Volume / Kuantitas *', desc: 'Jumlah satuan pekerjaan' },
+                  { key: 'unitPrice', label: 'Harga Satuan (Rp) *', desc: 'Tarif / harga per unit' },
+                  { key: 'unit', label: 'Satuan Pekerjaan', desc: 'm3, m2, kg, meter, unit' },
+                  { key: 'wbsCode', label: 'Kode WBS', desc: 'Nomor hirarki 1.1, 1.2' },
+                  { key: 'itemCode', label: 'Kode Item', desc: 'Kode material / AHSP' },
+                  { key: 'category', label: 'Kategori Biaya', desc: 'Material, Upah, Alat, Overhead' },
+                  { key: 'workPackage', label: 'Paket Pekerjaan', desc: 'Civil, Electrical, SCADA' },
+                ].map((field) => {
+                  const score = confidenceScores[field.key] || 50;
+                  return (
+                    <div key={field.key} className="p-3 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-slate-200">{field.label}</label>
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                          score >= 90
+                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                            : score >= 75
+                            ? 'bg-sky-950 text-sky-300 border border-sky-800'
+                            : 'bg-amber-950 text-amber-300 border border-amber-800'
+                        }`}>
+                          {score}% Sesuai
+                        </span>
+                      </div>
+                      <select
+                        value={(fieldMappings as any)[field.key] || ''}
+                        onChange={(e) =>
+                          setFieldMappings((prev) => ({ ...prev, [field.key]: e.target.value }))
+                        }
+                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white font-medium"
+                      >
+                        <option value="">-- Lewati / Kosongkan --</option>
+                        {detectedHeaders.map((h) => (
+                          <option key={h} value={h}>
+                            Kolom: {h}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-slate-500">{field.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Sample 3 Rows Live Preview */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Eye className="w-3.5 h-3.5 text-sky-400" />
+                    Pratinjau Hasil Pemetaan (3 Baris Pertama dari {rawExcelRows.length} Baris)
+                  </h4>
+                  <span className="text-[11px] text-slate-500">Live preview hasil penyesuaian kolom</span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
+                  <table className="w-full text-left text-xs">
+                    <thead className="text-[10px] text-slate-400 uppercase bg-slate-900/90 border-b border-slate-800">
+                      <tr>
+                        <th className="py-2 px-2.5">WBS</th>
+                        <th className="py-2 px-2.5">Deskripsi</th>
+                        <th className="py-2 px-2.5 text-right">Volume</th>
+                        <th className="py-2 px-2.5">Satuan</th>
+                        <th className="py-2 px-2.5 text-right">Harga Satuan</th>
+                        <th className="py-2 px-2.5 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                      {rawExcelRows.slice(0, 3).map((row, idx) => {
+                        const desc = row[fieldMappings.description] || '-';
+                        const vol = parseFloat(String(row[fieldMappings.volume]).replace(/[^0-9.-]/g, '')) || 0;
+                        const prc = parseFloat(String(row[fieldMappings.unitPrice]).replace(/[^0-9.-]/g, '')) || 0;
+                        const wbs = row[fieldMappings.wbsCode] || `1.${idx + 1}`;
+                        const unitVal = row[fieldMappings.unit] || 'unit';
+                        return (
+                          <tr key={idx} className="hover:bg-slate-900/30">
+                            <td className="py-2 px-2.5 text-sky-400">{wbs}</td>
+                            <td className="py-2 px-2.5 text-slate-200 font-sans">{desc}</td>
+                            <td className="py-2 px-2.5 text-right text-slate-300">{vol.toLocaleString('id-ID')}</td>
+                            <td className="py-2 px-2.5 text-slate-400 font-sans">{unitVal}</td>
+                            <td className="py-2 px-2.5 text-right text-slate-300">{formatRupiah(prc)}</td>
+                            <td className="py-2 px-2.5 text-right text-emerald-400 font-semibold">{formatRupiah(vol * prc)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-800 flex items-center justify-between bg-slate-950/80">
+              <button
+                type="button"
+                onClick={() => setShowMappingModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmImportedItems}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs text-white transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2 cursor-pointer"
+              >
+                <Check className="w-4 h-4" />
+                <span>+ Konfirmasi & Masukkan ke RAB ({rawExcelRows.length} Item)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

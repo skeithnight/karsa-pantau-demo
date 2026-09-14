@@ -20,7 +20,9 @@ import {
   RefreshCw,
   AlertTriangle,
   Building2,
+  GitCompare,
 } from 'lucide-react';
+
 import { apiRequest } from '../../../lib/api';
 import { AiChatWidget } from '../../../components/AiChatWidget';
 
@@ -233,6 +235,14 @@ export default function ProjectDashboardPage() {
             <FileSpreadsheet className="w-4 h-4" />
             Buka RAB Builder
           </Link>
+
+          <Link
+            href={`/projects/${projectId}/rab/diff`}
+            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <GitCompare className="w-4 h-4 text-amber-400" />
+            Lacak Revisi & Diff RAB
+          </Link>
         </div>
       </div>
 
@@ -247,8 +257,15 @@ export default function ProjectDashboardPage() {
           <div className="text-xl sm:text-2xl font-bold text-white">
             {formatRupiah(project.totalRab)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Anggaran disetujui v1</p>
+          <Link
+            href={`/projects/${projectId}/rab/diff`}
+            className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 mt-1 transition-colors"
+          >
+            <GitCompare className="w-3 h-3" />
+            <span>v1.0 Baseline (Ada 1 Revisi CCO)</span>
+          </Link>
         </div>
+
 
         {/* Card 2: Realisasi Aktual */}
         <div className="glass-card rounded-2xl p-5 border border-slate-800">

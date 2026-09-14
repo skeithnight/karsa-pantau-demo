@@ -177,7 +177,185 @@ export class AiSemanticSearchService {
     }
 
     // 4. Fallback Standar AHSP Katalog General EPC (SNI / Permen PUPR)
-    const ahspStandardCatalog: SemanticSearchResultItem[] = [
+    const ahspStandardCatalog = this.getStandardAhspCatalog();
+
+    const qLower = cleanQuery.toLowerCase();
+    const matched = ahspStandardCatalog.filter((item) => {
+      const matchText = `${item.description} ${item.itemCode} ${item.workPackage} ${item.category}`.toLowerCase();
+      const terms = qLower.split(/\s+/).filter(Boolean);
+      return terms.some((t) => matchText.includes(t));
+    });
+
+    const candidates = matched.length > 0 ? matched.slice(0, 5) : ahspStandardCatalog.slice(0, 4);
+
+    return {
+      query: cleanQuery,
+      isAiAssisted: false,
+      aiExplanation: `Rekomendasi acuan harga satuan AHSP (PUPR & SNI) untuk kata kunci "${cleanQuery}". Silakan pilih item untuk diterapkan ke form RAB.`,
+      candidates,
+    };
+  }
+
+  /**
+   * Historical Price Guardrail (Anti Mark-Up & Typo Prevention)
+   * Evaluates if an input unit price deviates significantly from historical/AHSP catalog median
+   */
+  async checkPriceGuardrail(
+    description: string,
+    unitPrice: number,
+    unit?: string,
+    _category?: string,
+  ): Promise<{
+
+    itemDescription: string;
+    inputUnitPrice: number;
+    unit?: string;
+    isAnomaly: boolean;
+    medianPrice: number;
+    deviationPercent: number;
+    riskLevel: 'NORMAL' | 'MEDIUM' | 'HIGH' | 'LOW';
+    sampleCount: number;
+    message: string;
+    historicalReference?: {
+      source: string;
+      itemCode: string;
+      unitPrice: number;
+    };
+  }> {
+    const cleanDesc = (description || '').trim();
+    if (!cleanDesc || isNaN(unitPrice) || unitPrice <= 0) {
+      return {
+        itemDescription: cleanDesc,
+        inputUnitPrice: unitPrice,
+        unit,
+        isAnomaly: false,
+        medianPrice: unitPrice,
+        deviationPercent: 0,
+        riskLevel: 'NORMAL',
+        sampleCount: 0,
+        message: 'Deskripsi pekerjaan atau harga satuan belum diisi.',
+      };
+    }
+
+    const prices: { price: number; code: string; source: string }[] = [];
+
+    // 1. Query database for similar items
+    try {
+      const searchTerms = cleanDesc.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+      const firstTerm = searchTerms[0] || cleanDesc;
+
+      const dbRes = await this.db.query(
+        `SELECT 
+           h.unit_price as price, 
+           h.item_code as code, 
+           COALESCE(p.name, 'Histori Proyek') as source
+         FROM rab_item_history h
+         LEFT JOIN projects p ON p.id = h.source_project_id
+         WHERE h.description ILIKE $1 OR h.item_code ILIKE $1
+         UNION
+         SELECT 
+           i.unit_price as price, 
+           i.item_code as code, 
+           'Katalog RAB Internal' as source
+         FROM rab_items i
+         WHERE i.description ILIKE $1
+         LIMIT 30`,
+        [`%${firstTerm}%`],
+      );
+
+      for (const row of dbRes.rows) {
+        const p = parseFloat(row.price);
+        if (!isNaN(p) && p > 0) {
+          prices.push({ price: p, code: row.code, source: row.source });
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Price guardrail database lookup warning: ${err.message}`);
+    }
+
+    // 2. Also search fallback AHSP catalog for broad EPC coverage
+    const terms = cleanDesc.toLowerCase().split(/\s+/).filter(Boolean);
+    const ahspMatches = this.getStandardAhspCatalog().filter((item) => {
+      const matchText = `${item.description} ${item.itemCode} ${item.workPackage} ${item.category}`.toLowerCase();
+      return terms.some((t) => matchText.includes(t));
+    });
+    for (const c of ahspMatches) {
+      if (c.unitPrice > 0) {
+        prices.push({
+          price: c.unitPrice,
+          code: c.itemCode,
+          source: c.sourceProjectName || 'Standar AHSP PUPR',
+
+        });
+      }
+    }
+
+    if (prices.length === 0) {
+      return {
+        itemDescription: cleanDesc,
+        inputUnitPrice: unitPrice,
+        unit,
+        isAnomaly: false,
+        medianPrice: unitPrice,
+        deviationPercent: 0,
+        riskLevel: 'NORMAL',
+        sampleCount: 0,
+        message: 'Belum ada data historis pembanding yang relevan untuk item ini.',
+      };
+    }
+
+    // Calculate median
+    prices.sort((a, b) => a.price - b.price);
+    const mid = Math.floor(prices.length / 2);
+    const medianPrice =
+      prices.length % 2 !== 0
+        ? prices[mid].price
+        : Math.round((prices[mid - 1].price + prices[mid].price) / 2);
+
+    const deviationPercent = Math.round(((unitPrice - medianPrice) / medianPrice) * 100 * 10) / 10;
+    const closestRef = prices[mid];
+
+    let riskLevel: 'NORMAL' | 'MEDIUM' | 'HIGH' | 'LOW' = 'NORMAL';
+    let isAnomaly = false;
+    let message = `Harga Rp ${unitPrice.toLocaleString('id-ID')} berada dalam rentang wajar standar historis (median Rp ${medianPrice.toLocaleString('id-ID')}).`;
+
+    if (deviationPercent >= 50) {
+      riskLevel = 'HIGH';
+      isAnomaly = true;
+      message = `🚨 Deviasi Sangat Tinggi: Harga Rp ${unitPrice.toLocaleString('id-ID')} adalah +${deviationPercent}% di atas median historis (Rp ${medianPrice.toLocaleString('id-ID')}). Potensi mark-up atau kesalahan ketik nol.`;
+    } else if (deviationPercent >= 25) {
+      riskLevel = 'MEDIUM';
+      isAnomaly = true;
+      message = `⚠️ Deviasi Di Atas Ambang Wajar: Harga Rp ${unitPrice.toLocaleString('id-ID')} adalah +${deviationPercent}% di atas median historis (Rp ${medianPrice.toLocaleString('id-ID')}). Harap masukkan catatan justifikasi teknis.`;
+    } else if (deviationPercent <= -35) {
+      riskLevel = 'LOW';
+      isAnomaly = true;
+      message = `ℹ️ Potensi Under-Estimate: Harga Rp ${unitPrice.toLocaleString('id-ID')} adalah ${deviationPercent}% di bawah median historis (Rp ${medianPrice.toLocaleString('id-ID')}). Pastikan spesifikasi material tidak di bawah standar tender.`;
+    }
+
+    return {
+      itemDescription: cleanDesc,
+      inputUnitPrice: unitPrice,
+      unit,
+      isAnomaly,
+      medianPrice,
+      deviationPercent,
+      riskLevel,
+      sampleCount: prices.length,
+      message,
+      historicalReference: {
+        source: closestRef.source,
+        itemCode: closestRef.code,
+        unitPrice: closestRef.price,
+      },
+    };
+  }
+
+  /**
+   * Reference catalog for standard Indonesian EPC construction (AHSP SNI & Permen PUPR)
+   */
+  private getStandardAhspCatalog(): SemanticSearchResultItem[] {
+    return [
       {
         id: 'ahsp-civ-01',
         itemCode: 'CIV-SNI-01',
@@ -377,21 +555,7 @@ export class AiSemanticSearchService {
         similarityScore: 0.92,
       },
     ];
-
-    const qLower = cleanQuery.toLowerCase();
-    const matched = ahspStandardCatalog.filter((item) => {
-      const matchText = `${item.description} ${item.itemCode} ${item.workPackage} ${item.category}`.toLowerCase();
-      const terms = qLower.split(/\s+/).filter(Boolean);
-      return terms.some((t) => matchText.includes(t));
-    });
-
-    const candidates = matched.length > 0 ? matched.slice(0, 5) : ahspStandardCatalog.slice(0, 4);
-
-    return {
-      query: cleanQuery,
-      isAiAssisted: false,
-      aiExplanation: `Rekomendasi acuan harga satuan AHSP (PUPR & SNI) untuk kata kunci "${cleanQuery}". Silakan pilih item untuk diterapkan ke form RAB.`,
-      candidates,
-    };
   }
 }
+
+

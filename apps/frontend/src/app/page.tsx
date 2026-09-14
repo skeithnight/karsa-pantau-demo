@@ -31,8 +31,14 @@ import {
   BadgePercent,
   ChevronRight,
   MessageSquare,
+  GitCompare,
+  GitBranch,
+  MapPin,
+  Camera,
+  ShieldAlert,
 } from 'lucide-react';
 import { setAuthToken, setActiveOrganization } from '../lib/api';
+
 
 export default function LandingPage() {
   const router = useRouter();
@@ -216,108 +222,141 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. NEW SECTION: Roadmap Inovasi AI & Kebutuhan Tim Keuangan (MARKETING SHOWCASE) */}
+      {/* 3. NEW SECTION: Senjata Rahasia Kontraktor EPC & Solusi Finansial (MARKETING SHOWCASE) */}
       <section id="ai-roadmap" className="py-20 bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/80 text-[11px] font-semibold text-sky-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-800/80 text-[11px] font-semibold text-amber-300">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Inovasi AI & Solusi Tim Keuangan</span>
+              <span>Senjata Rahasia Kontraktor EPC</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-              Teknologi Pintar untuk Estimator, PM & Orang Finance
+              Bukan Sekadar Pengganti Excel — Dibangun untuk Realitas Lapangan
             </h2>
             <p className="text-sm text-slate-400">
-              AI di Karsa Pantau dibangun bukan untuk sekadar gimmick, melainkan menyelesaikan friksi nyata di lapangan: 
-              dari kecepatan tender, pencegahan salah input, hingga perlindungan arus kas kontraktor.
+              Karsa Pantau mengatasi titik kritis yang membuat proyek konstruksi rugi: 
+              dari revisi RAB tender tak terkontrol, nota belanja typo, klaim progres fiktif, hingga defisit arus kas.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Card 1: AI Smart BOQ & Excel Parser (Fase 1 Prioritas Utama) */}
-            <div className="p-7 rounded-3xl bg-slate-900/70 border-2 border-sky-500/40 hover:border-sky-400 transition-all space-y-4 relative overflow-hidden shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Pillar 1: Explainable AI BOQ Parser */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border-2 border-sky-500/40 hover:border-sky-400 transition-all space-y-3.5 shadow-xl">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
-                  <FileSpreadsheet className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
+                  <FileSpreadsheet className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                  🔥 Prioritas Utama &bull; Fase 1
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800">
+                  Live &bull; Human-in-the-Loop
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">AI Smart BOQ & Excel Ingestion Engine</h3>
+              <h3 className="text-lg font-bold text-white">Explainable AI BOQ Parser</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Tinggalkan input manual berhari-hari. Cukup upload file Excel BOQ tender dari Owner atau file katalog harga supplier (format kolom apapun). 
-                AI secara cerdas mendeteksi kolom (WBS, deskripsi, volume, satuan, harga) dan mengonversinya menjadi data RAB terstruktur siap pakai dalam 10 detik.
+                Bukan black-box. AI mendeteksi kolom Excel tender dan menampilkan <strong>Confidence Score per kolom</strong> (98% akurasi) dengan live preview dan editor mapping sebelum data dikunci ke lembar kerja RAB.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Auto-Map Kolom Excel</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Impor Katalog Vendor</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Vector Semantic Search</span>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-400">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-sky-300">✓ Confidence Score</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-sky-300">✓ Human-Verified</span>
               </div>
             </div>
 
-            {/* Card 2: Portal Khusus Finance & Export Akuntansi (Fase 1 Prioritas Utama) */}
-            <div className="p-7 rounded-3xl bg-slate-900/70 border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-4 relative overflow-hidden shadow-2xl">
+            {/* Pillar 2: Git-like RAB Versioning & Diff */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-3.5 shadow-xl">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                  <Wallet className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <GitCompare className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  💼 Kebutuhan Finance &bull; Fase 1
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800">
+                  Live &bull; CCO Tracking
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">Portal Keuangan & Export Akuntansi (Excel)</h3>
+              <h3 className="text-lg font-bold text-white">Git-like RAB Versioning & Diff</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Dashboard khusus tim Keuangan untuk memantau Gross Margin real-time, Committed Cost vs Realisasi Kas Keluar, 
-                serta rekapitulasi Accounts Payable (Hutang Vendor) dari nota lapangan. Dilengkapi fitur 1-klik unduh rekap jurnal pengeluaran (.xlsx) 
-                yang siap diimpor ke software akuntansi (Accurate, Zahir, SAP, Jurnal.id).
+                Lacak setiap revisi Owner dan Addendum CCO layaknya commit code. Visualisasi Diff menyorot baris baru (hijau), volume/harga berubah (kuning), dan scope dicoret (merah) beserta kalkulasi dampak netto kontrak.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ Realtime Gross Margin</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ AP Vendor Tracker</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ 1-Click Export .xlsx</span>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-400">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-amber-300">✓ Visual Delta Diff</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-amber-300">✓ Ekspor CCO .CSV</span>
               </div>
             </div>
 
-            {/* Card 3: AI Cashflow Deficit Early Warning (Fase 2) */}
-            <div className="p-7 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-all space-y-4">
+            {/* Pillar 3: Photo-to-Progress with GPS Geotag */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border-2 border-emerald-500/40 hover:border-emerald-400 transition-all space-y-3.5 shadow-xl">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                  <CalendarClock className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <Camera className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-800 text-slate-400">
-                  🔮 Tahap 2 &bull; Cashflow Intelligence
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  Live &bull; Anti-Fake Proof
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">AI Cashflow Deficit Early Warning</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Menyinkronkan Kurva S pengeluaran kas belanja lapangan dengan jadwal termin pencairan Owner (DP, termin progres, retensi). 
-                AI otomatis mendeteksi jika kas diproyeksikan defisit di minggu mendatang dan merekomendasikan jadwal pengajuan sertifikat progres atau negosiasi tempo supplier.
+              <h3 className="text-lg font-bold text-white">Photo Geotag & Anti-Fake Time</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Mandor wajib mengunggah foto progres atau kwitansi via kamera HP. Aplikasi otomatis menempelkan koordinat GPS riil dan timestamp permanen untuk bukti tak terbantahkan saat pengajuan termin ke Owner.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Simulasi Kas Masuk vs Keluar</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Rekomendasi Invoice Termin</span>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-400">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-emerald-300">✓ GPS Coordinate Stamp</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-emerald-300">✓ Termin Protection</span>
               </div>
             </div>
 
-            {/* Card 4: AI AHSP Generator & Auto-Breakdown (Fase 3) */}
-            <div className="p-7 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-all space-y-4">
+            {/* Pillar 4: Historical Price Guardrail */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
-                  <Cpu className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+                  <ShieldAlert className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-800 text-slate-400">
-                  📐 Tahap 3 &bull; Standar PUPR / SNI
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800">
+                  Live &bull; Anti Mark-Up
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">AI AHSP Generator & Auto-Breakdown</h3>
+              <h3 className="text-lg font-bold text-white">Historical Price Guardrail</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Cukup ketik nama pekerjaan, AI otomatis merinci koefisien bahan, upah tukang, dan sewa alat sesuai standar Permen PUPR & SNI. 
-                Sistem langsung mencocokkan harga terkini dari Katalog Bahan yang sudah diimpor untuk menghitung harga satuan pekerjaan final secara otomatis.
+                Pencegahan salah ketik nol dan mark-up harga. Saat input harga satuan di atas 25% dari median historis, muncul peringatan otomatis dan mewajibkan catatan justifikasi audit sebelum disimpan.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Koefisien Bahan, Upah, Alat</span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Tender 5x Lebih Cepat</span>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-500">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">Median Deviation Alert</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">Audit Justification</span>
+              </div>
+            </div>
+
+            {/* Pillar 5: Portal Keuangan & Ekspor Akuntansi */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                  Live &bull; Finance Ready
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white">Portal Keuangan & Ekspor Jurnal</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pantau Gross Margin real-time, kas keluar aktual, dan Accounts Payable hutang vendor tempo 30 hari. Ekspor jurnal pengeluaran siap pakai untuk software akuntansi (Accurate, Zahir, SAP, Jurnal.id).
+              </p>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-500">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">AP Vendor Tracker</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">Jurnal Otomatis (.CSV)</span>
+              </div>
+            </div>
+
+            {/* Pillar 6: Dynamic Cashflow Forecasting */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                  <CalendarClock className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                  Roadmap &bull; Cashflow Shield
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white">Simulasi Cashflow "What-If"</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Menjawab pertanyaan kritis direksi: <em>"Bagaimana jika Owner telat bayar termin 30 hari?"</em> Sistem memproyeksikan minggu defisit dan merekomendasikan negosiasi tempo supplier atau percepatan termin.
+              </p>
+              <div className="pt-1 flex flex-wrap gap-1.5 text-[10px] font-medium text-slate-500">
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">What-If Delay Simulator</span>
+                <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">Mitigasi Defisit Kas</span>
               </div>
             </div>
           </div>
