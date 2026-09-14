@@ -15,15 +15,22 @@ import {
   Sparkles,
   BarChart3,
   Clock,
-  ChevronRight,
   Building2,
   Users,
   AlertTriangle,
   FileSpreadsheet,
   Check,
   Send,
+  Building,
+  Hammer,
+  Wallet,
+  CalendarClock,
+  Cpu,
+  Download,
+  FileText,
+  BadgePercent,
+  ChevronRight,
   MessageSquare,
-  HelpCircle,
 } from 'lucide-react';
 import { setAuthToken, setActiveOrganization } from '../lib/api';
 
@@ -37,15 +44,15 @@ export default function LandingPage() {
     name: '',
     company: '',
     email: '',
+    sector: 'general_contractor',
     expectedBudget: '1-3jt',
-    priorityFeatures: 'kurva_s_evm',
+    priorityFeatures: 'import_excel_boq',
     notes: '',
   });
 
   // 1-Click Interactive Demo Launcher
   const handleLaunchDemo = async () => {
     try {
-      // Simulasikan session login guest demo langsung ke backend
       const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,27 +64,15 @@ export default function LandingPage() {
         setAuthToken(data.accessToken);
         const org = data.organizations?.[0] || data.activeOrganization || {
           id: '0bffc122-3a58-4e1b-9f7b-105053886aa8',
-          name: 'PT Karsa Solar Nusantara (Demo)',
-          currentPlan: 'PRO (Demo Mode)',
+          name: 'PT Karsa Konstruksi Mandiri (Demo)',
+          slug: 'karsa-demo',
+          tier: 'starter_epc',
         };
         setActiveOrganization(org);
-        localStorage.setItem(
-          'karsa_user',
-          JSON.stringify({
-            id: data.user.id,
-            name: 'Pengunjung Demo (Guest PM)',
-            email: 'demo@karsapantau.id',
-            role: 'pm',
-          }),
-        );
-        localStorage.setItem('karsa_demo_mode', 'true');
       }
     } catch {
-      // Fallback local persistence
-      localStorage.setItem('karsa_demo_mode', 'true');
+      // Fallback tetap arahkan ke demo jika offline
     }
-
-    // Arahkan langsung ke proyek demo
     router.push('/demo');
   };
 
@@ -91,8 +86,9 @@ export default function LandingPage() {
         name: '',
         company: '',
         email: '',
+        sector: 'general_contractor',
         expectedBudget: '1-3jt',
-        priorityFeatures: 'kurva_s_evm',
+        priorityFeatures: 'import_excel_boq',
         notes: '',
       });
     }, 2500);
@@ -107,7 +103,7 @@ export default function LandingPage() {
             Pilot Partner Program
           </span>
           <span className="hidden sm:inline">
-            Karsa Pantau kini membuka akses Beta untuk kontraktor EPC PLTS Indonesia.
+            Karsa Pantau kini membuka akses Beta untuk kontraktor EPC & Konstruksi Umum Indonesia (Gedung, Sipil, MEP, & Energi).
           </span>
           <button
             onClick={() => setShowFeedbackModal(true)}
@@ -120,27 +116,26 @@ export default function LandingPage() {
 
       {/* 2. Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 lg:pt-24 lg:pb-32 px-4 sm:px-6 lg:px-8">
-        {/* Glow ambient background */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-sky-500/15 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-1/3 left-1/3 w-[400px] h-[300px] bg-amber-500/10 blur-[140px] rounded-full pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-medium text-slate-300 shadow-xl backdrop-blur-md">
-            <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
-            <span>Sistem Khusus Konstruksi PLTS (Rooftop & Ground-Mounted)</span>
+            <Building2 className="w-4 h-4 text-sky-400" />
+            <span>Platform SaaS Manajemen Anggaran & Biaya Lapangan Konstruksi (General EPC)</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1]">
-            Kendalikan Anggaran & Kurva S Proyek PLTS{' '}
+            Kendalikan Anggaran, RAB AHSP & Realisasi Biaya Proyek{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-sky-400 to-emerald-400">
               Secara Presisi
             </span>
           </h1>
 
           <p className="max-w-3xl mx-auto text-base sm:text-lg text-slate-400 leading-relaxed font-normal">
-            Tinggalkan spreadsheet manual yang rentan rusak. Karsa Pantau mengintegrasikan penyusunan RAB standar AHSP, 
-            kalkulasi Earned Value Management (EVM) otomatis, serta ekstraksi kuitansi lapangan berbasis AI OCR demi 
-            mencegah pembengkakan biaya sedini mungkin.
+            Tinggalkan spreadsheet manual yang rentan bocor dan formula rusak. Karsa Pantau mengintegrasikan penyusunan 
+            RAB standar AHSP, otomatisasi Kurva S & EVM, serta lapisan AI cerdas untuk mem-parse dokumen BOQ tender, 
+            mengontrol kas keluar, dan melayani kebutuhan pelaporan tim Finance.
           </p>
 
           {/* Dual Action Buttons */}
@@ -163,8 +158,29 @@ export default function LandingPage() {
             </Link>
           </div>
 
+          {/* Sektor Industri Konstruksi yang Didukung */}
+          <div className="pt-6">
+            <p className="text-xs uppercase font-semibold text-slate-500 tracking-wider mb-3">
+              Mendukung Berbagai Disiplin Proyek Kontraktor & EPC:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+              <span className="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-sky-400" /> Gedung & Komersial
+              </span>
+              <span className="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                <Hammer className="w-3.5 h-3.5 text-amber-400" /> Infrastruktur & Sipil
+              </span>
+              <span className="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-emerald-400" /> Mekanikal & Elektrikal (MEP)
+              </span>
+              <span className="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                <Sun className="w-3.5 h-3.5 text-orange-400" /> Energi Terbarukan & PLTS
+              </span>
+            </div>
+          </div>
+
           {/* Key Value Metric Badges */}
-          <div className="pt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+          <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm">
               <div className="text-xl font-bold text-white flex items-center gap-1.5">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -175,18 +191,18 @@ export default function LandingPage() {
 
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm">
               <div className="text-xl font-bold text-white flex items-center gap-1.5">
-                <Receipt className="w-4 h-4 text-sky-400" />
-                <span>AI OCR Struk</span>
+                <FileSpreadsheet className="w-4 h-4 text-sky-400" />
+                <span>AI Excel Parser</span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Ekstrak kuitansi toko material & alat lapangan instan</p>
+              <p className="text-xs text-slate-400 mt-1">Impor BOQ tender & katalog harga bahan dalam hitungan detik</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm">
               <div className="text-xl font-bold text-white flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Offline PWA</span>
+                <Wallet className="w-4 h-4 text-amber-400" />
+                <span>Finance Ready</span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Input aktual di remote area tetap tersimpan aman</p>
+              <p className="text-xs text-slate-400 mt-1">Monitoring margin kas keluar & ekspor jurnal siap akuntansi</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm">
@@ -200,7 +216,115 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Interactive Demo Showcase Section */}
+      {/* 3. NEW SECTION: Roadmap Inovasi AI & Kebutuhan Tim Keuangan (MARKETING SHOWCASE) */}
+      <section id="ai-roadmap" className="py-20 bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/80 text-[11px] font-semibold text-sky-300">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Inovasi AI & Solusi Tim Keuangan</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
+              Teknologi Pintar untuk Estimator, PM & Orang Finance
+            </h2>
+            <p className="text-sm text-slate-400">
+              AI di Karsa Pantau dibangun bukan untuk sekadar gimmick, melainkan menyelesaikan friksi nyata di lapangan: 
+              dari kecepatan tender, pencegahan salah input, hingga perlindungan arus kas kontraktor.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1: AI Smart BOQ & Excel Parser (Fase 1 Prioritas Utama) */}
+            <div className="p-7 rounded-3xl bg-slate-900/70 border-2 border-sky-500/40 hover:border-sky-400 transition-all space-y-4 relative overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
+                  <FileSpreadsheet className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                  🔥 Prioritas Utama &bull; Fase 1
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white">AI Smart BOQ & Excel Ingestion Engine</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Tinggalkan input manual berhari-hari. Cukup upload file Excel BOQ tender dari Owner atau file katalog harga supplier (format kolom apapun). 
+                AI secara cerdas mendeteksi kolom (WBS, deskripsi, volume, satuan, harga) dan mengonversinya menjadi data RAB terstruktur siap pakai dalam 10 detik.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Auto-Map Kolom Excel</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Impor Katalog Vendor</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-sky-300">✓ Vector Semantic Search</span>
+              </div>
+            </div>
+
+            {/* Card 2: Portal Khusus Finance & Export Akuntansi (Fase 1 Prioritas Utama) */}
+            <div className="p-7 rounded-3xl bg-slate-900/70 border-2 border-amber-500/40 hover:border-amber-400 transition-all space-y-4 relative overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  💼 Kebutuhan Finance &bull; Fase 1
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white">Portal Keuangan & Export Akuntansi (Excel)</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Dashboard khusus tim Keuangan untuk memantau Gross Margin real-time, Committed Cost vs Realisasi Kas Keluar, 
+                serta rekapitulasi Accounts Payable (Hutang Vendor) dari nota lapangan. Dilengkapi fitur 1-klik unduh rekap jurnal pengeluaran (.xlsx) 
+                yang siap diimpor ke software akuntansi (Accurate, Zahir, SAP, Jurnal.id).
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ Realtime Gross Margin</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ AP Vendor Tracker</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-amber-300">✓ 1-Click Export .xlsx</span>
+              </div>
+            </div>
+
+            {/* Card 3: AI Cashflow Deficit Early Warning (Fase 2) */}
+            <div className="p-7 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-all space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                  <CalendarClock className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-800 text-slate-400">
+                  🔮 Tahap 2 &bull; Cashflow Intelligence
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white">AI Cashflow Deficit Early Warning</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Menyinkronkan Kurva S pengeluaran kas belanja lapangan dengan jadwal termin pencairan Owner (DP, termin progres, retensi). 
+                AI otomatis mendeteksi jika kas diproyeksikan defisit di minggu mendatang dan merekomendasikan jadwal pengajuan sertifikat progres atau negosiasi tempo supplier.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Simulasi Kas Masuk vs Keluar</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Rekomendasi Invoice Termin</span>
+              </div>
+            </div>
+
+            {/* Card 4: AI AHSP Generator & Auto-Breakdown (Fase 3) */}
+            <div className="p-7 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-all space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                  <Cpu className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-800 text-slate-400">
+                  📐 Tahap 3 &bull; Standar PUPR / SNI
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white">AI AHSP Generator & Auto-Breakdown</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cukup ketik nama pekerjaan, AI otomatis merinci koefisien bahan, upah tukang, dan sewa alat sesuai standar Permen PUPR & SNI. 
+                Sistem langsung mencocokkan harga terkini dari Katalog Bahan yang sudah diimpor untuk menghitung harga satuan pekerjaan final secara otomatis.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Koefisien Bahan, Upah, Alat</span>
+                <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">Tender 5x Lebih Cepat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Interactive Demo Showcase Section */}
       <section id="demo" className="py-16 bg-slate-900/30 border-y border-slate-800/80 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -208,7 +332,7 @@ export default function LandingPage() {
               Eksplorasi Langsung Tanpa Registrasi
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-              Coba Pengalaman Riil Proyek PLTS 500 kWp
+              Coba Pengalaman Riil Simulasi Proyek Konstruksi
             </h2>
             <p className="text-sm text-slate-400">
               Klik tombol di bawah untuk masuk ke mode simulasi live. Anda dapat menginspeksi rincian RAB AHSP, 
@@ -222,8 +346,8 @@ export default function LandingPage() {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
                 <div>
-                  <h3 className="text-lg font-bold text-white">PLTS Atap Industri 500 kWp (Demo Site)</h3>
-                  <p className="text-xs text-slate-400">Kawasan Industri GIIC Cikarang &bull; Kapasitas: 500 kWp &bull; Status: Ongoing</p>
+                  <h3 className="text-lg font-bold text-white">Proyek Konstruksi & Instalasi Komersial (Demo Site)</h3>
+                  <p className="text-xs text-slate-400">Kawasan Industri Cikarang &bull; Kategori: General EPC & MEP &bull; Status: Ongoing</p>
                 </div>
               </div>
               <span className="text-xs px-3 py-1 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-mono">
@@ -249,78 +373,79 @@ export default function LandingPage() {
                 <span className="text-slate-400 text-[11px]">Dari Earned Value Rp 1,81 M</span>
               </div>
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-slate-400 block">Item RAB Terverifikasi</span>
+                <span className="text-slate-400 block">Paket Pekerjaan Terverifikasi</span>
                 <span className="text-xl font-black text-amber-400 mt-1 block">4 Paket</span>
-                <span className="text-slate-400 text-[11px]">Modul, Inverter, Roof Rail, AC/DC</span>
+                <span className="text-slate-400 text-[11px]">Struktur, Elektrikal, Alat, Overhead</span>
               </div>
             </div>
 
             {/* Launch Banner Inside Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-sky-950/60 to-slate-900 border border-sky-800/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>Siap Menjelajahi Dashboard Demo Lengkap?</span>
+                  <span>Siap Uji Coba Langsung di Browser Anda?</span>
                 </h4>
-                <p className="text-xs text-slate-300">
-                  Data contoh sudah disiapkan lengkap dengan simulasi struk pembelian modul dan kurva S mingguan.
+                <p className="text-xs text-slate-400">
+                  Data simulasi sudah diisi lengkap dengan histori kurva S, realisasi lapangan, dan audit trail AI.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleLaunchDemo}
-                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer shrink-0"
+                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                Buka Mode Demo Sekarang &rarr;
+                <span>Mulai Sesi Demo Sekarang</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Problem & Comparison: Excel vs Karsa Pantau */}
+      {/* 5. Spreadsheet vs Karsa Pantau Comparison */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
-            Mengapa Kontraktor PLTS Beralih
+            Mengapa Kontraktor Beralih ke Karsa Pantau?
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-            Tantangan Nyata di Lapangan Konstruksi PLTS
+            Excel Bagus untuk Hitungan Cepat, Tapi Bahaya untuk Kontrol Proyek Besar
           </h2>
           <p className="text-sm text-slate-400">
-            Sebagian besar deviasi biaya pada proyek surya terjadi karena lambatnya pelaporan pengeluaran lapangan dan rapuhnya formula spreadsheet.
+            Perbandingan langsung bagaimana Karsa Pantau menutup celah kebocoran anggaran yang biasa terjadi pada spreadsheet manual.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Cara Lama (Spreadsheet) */}
-          <div className="p-8 rounded-3xl bg-slate-900/30 border border-rose-950/60 space-y-6">
+          {/* Masalah Spreadsheet */}
+          <div className="p-8 rounded-3xl bg-slate-900/40 border border-rose-900/30 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-rose-950/80 text-rose-400 border border-rose-800/50">
+              <div className="p-2.5 rounded-xl bg-rose-950/80 text-rose-400 border border-rose-900/50">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Cara Konvensional (Spreadsheet Excel)</h3>
-                <p className="text-xs text-rose-400">Rentan Galat & Sulit Dikontrol Bersama</p>
+                <p className="text-xs text-rose-400">Rentan Galat, Lambat & Bikin Pusing Tim Finance</p>
               </div>
             </div>
 
             <ul className="space-y-3.5 text-xs text-slate-300">
               <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold shrink-0">✕</span>
-                <span><strong>Kuitansi Fisik Hilang:</strong> Bukti pembelian baut, kabel, dan sewa crane sering terselip atau baru direkap akhir bulan.</span>
+                <span><strong>Ketik Ulang BOQ Berhari-hari:</strong> Estimator menghabiskan waktu berharga hanya untuk menyalin ratusan baris BOQ dari tender Owner.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold shrink-0">✕</span>
-                <span><strong>Formula Sering Rusak:</strong> Banyak versi file (RAB_final_v2_revisi.xlsx) membingungkan PM dan Direksi.</span>
+                <span><strong>Formula Sering Rusak:</strong> Banyak versi file (RAB_final_v2_revisi.xlsx) membingungkan PM, Direksi, dan Owner.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold shrink-0">✕</span>
-                <span><strong>Deviasi Terlambat Diketahui:</strong> Overbudget baru disadari saat kas proyek sudah habis dan progres terhenti.</span>
+                <span><strong>Kas Macet Tak Terdeteksi:</strong> Kehabisan kas (*cashflow deficit*) baru disadari saat uang rekening kosong dan supplier menolak kirim barang.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold shrink-0">✕</span>
-                <span><strong>Data Tidak Terisolasi:</strong> Dokumen proyek antar-klien mudah tercecer dan tidak memiliki audit trail.</span>
+                <span><strong>Orang Finance Kesulitan Rekap:</strong> Nota kuitansi terselip dan harus direkap manual satu persatu ke software akuntansi.</span>
               </li>
             </ul>
           </div>
@@ -329,7 +454,7 @@ export default function LandingPage() {
           <div className="p-8 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 border border-sky-800/50 shadow-xl space-y-6">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-sky-950/80 text-sky-400 border border-sky-800/50">
-                <Sun className="w-5 h-5" />
+                <Building2 className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Dengan Karsa Pantau SaaS</h3>
@@ -340,80 +465,21 @@ export default function LandingPage() {
             <ul className="space-y-3.5 text-xs text-slate-300">
               <li className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>AI OCR Kuitansi Lapangan:</strong> Cukup foto struk lewat smartphone, sistem otomatis mengisi nominal dan toko.</span>
+                <span><strong>AI Smart BOQ & Excel Parser:</strong> Upload file Excel apapun, sistem memetakan hierarki pekerjaan otomatis dalam 10 detik.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Kurva S & EVM Finansial Otomatis:</strong> S-Curve terupdate otomatis setiap ada entri progres dan realisasi biaya.</span>
+                <span><strong>Kurva S & EVM Finansial Otomatis:</strong> S-Curve dan CPI/SPI terupdate otomatis setiap ada entri progres dan realisasi biaya.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Deteksi Dini Overbudget:</strong> Sistem memberikan peringatan dini ketika ada realisasi yang melampaui toleransi RAB.</span>
+                <span><strong>Portal Finance & Export Excel:</strong> Pantau gross margin riil, kontrol hutang vendor, dan ekspor jurnal langsung ke Excel/Accurate.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Multi-Tenant Mandiri:</strong> Data setiap perusahaan terisolasi ketat dengan kontrol role (PM, Direksi, Estimator).</span>
+                <span><strong>Multi-Tenant Mandiri:</strong> Data setiap perusahaan terisolasi ketat dengan kontrol role (PM, Direksi, Estimator, Finance).</span>
               </li>
             </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. 4 Core Features Section */}
-      <section id="features" className="py-20 bg-slate-900/40 border-t border-slate-800 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">
-              Fitur Dirancang Khusus untuk PLTS
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-              Semua yang Dibutuhkan Tim EPC dalam Satu Aplikasi
-            </h2>
-            <p className="text-sm text-slate-400">
-              Mulai dari tahap estimasi pra-kontrak hingga serah terima proyek (COD) berjalan dalam alur yang rapi.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
-              <div className="w-10 h-10 rounded-xl bg-sky-950 flex items-center justify-center text-sky-400 border border-sky-800">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white">RAB & AHSP PLTS</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Struktur WBS standar: pengadaan modul PV, inverter, mounting rooftop, pengkabelan DC/AC, hingga komisioning.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
-              <div className="w-10 h-10 rounded-xl bg-amber-950 flex items-center justify-center text-amber-400 border border-amber-800">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white">Kurva S & EVM</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Analisis Planned Value (PV), Earned Value (EV), Actual Cost (AC), CPI & SPI secara real-time tanpa hitung manual.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
-              <div className="w-10 h-10 rounded-xl bg-emerald-950 flex items-center justify-center text-emerald-400 border border-emerald-800">
-                <Receipt className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white">AI OCR Struk Offline</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Supervisor lapangan dapat mengunggah bukti pengeluaran saat offline; sistem menyinkronkan data begitu tersambung sinyal.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
-              <div className="w-10 h-10 rounded-xl bg-purple-950 flex items-center justify-center text-purple-400 border border-purple-800">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white">Multi-Level Approval</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Workflow persetujuan berjenjang: Estimator menyusun &rarr; PM meninjau &rarr; Direksi menyetujui baseline anggaran resmi.
-              </p>
-            </div>
           </div>
         </div>
       </section>
@@ -429,7 +495,7 @@ export default function LandingPage() {
             Paket Khusus Tahap Pengembangan Awal
           </h2>
           <p className="text-sm text-slate-400">
-            Kami memprioritaskan masukan langsung dari kontraktor PLTS agar produk ini benar-benar menyelesaikan masalah nyata di lapangan.
+            Kami memprioritaskan masukan langsung dari kontraktor konstruksi & EPC agar produk ini benar-benar menyelesaikan masalah nyata di lapangan.
           </p>
         </div>
 
@@ -448,161 +514,155 @@ export default function LandingPage() {
               </p>
               <div>
                 <div className="text-3xl font-black text-white">Rp 0</div>
-                <span className="text-xs text-emerald-400 font-medium">Gratis Selama Masa Evaluasi</span>
+                <div className="text-xs text-slate-400 mt-0.5">Gratis 14 Hari &bull; Tanpa Kartu Kredit</div>
               </div>
 
-              <ul className="space-y-3 text-xs text-slate-300 pt-4 border-t border-slate-800">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>1 Proyek Konstruksi PLTS Aktif</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>3 Pengguna Lapangan & PM</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>50x Ekstraksi Struk OCR / Bulan</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Kalkulasi Kurva S & EVM Penuh</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Akses PWA Offline Lapangan</span>
-                </li>
-              </ul>
+              <div className="border-t border-slate-800 pt-4 space-y-2.5 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>1 Proyek Aktif Evaluasi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Hingga 5 Anggota Tim (PM, Estimator, Supv)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Kurva S & EVM Otomatis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>AI Smart BOQ & Excel Parser (Beta)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Akses PWA Offline Mobile</span>
+                </div>
+              </div>
             </div>
 
             <Link
-              href="/register?plan=TRIAL"
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white text-center transition-all shadow-md block"
+              href="/register"
+              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs text-center border border-slate-700 transition-all block"
             >
-              Mulai Free Trial Sekarang &rarr;
+              Mulai Uji Coba Gratis Sekarang
             </Link>
           </div>
 
-          {/* Tier 2: Starter EPC (Harga TBA) */}
-          <div className="p-8 rounded-3xl bg-slate-900/90 border-2 border-sky-500 shadow-2xl shadow-sky-500/10 flex flex-col justify-between space-y-6 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-sky-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider">
-              Rekomendasi Kontraktor
-            </div>
-
+          {/* Tier 2: Starter EPC (Harga TBA / Early Adopter) */}
+          <div className="p-8 rounded-3xl bg-gradient-to-b from-sky-950/40 to-slate-900 border-2 border-sky-500/50 flex flex-col justify-between space-y-6 relative shadow-2xl">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold text-white">Starter EPC</h3>
-                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">
-                  Co-Creation
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800">
+                  Rekomendasi
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Kapasitas ideal untuk kontraktor PLTS komersial & industri dengan portofolio multi-proyek.
+                Untuk kontraktor berkembang yang mengelola 2–5 proyek konstruksi simultan per tahun.
               </p>
               <div>
-                <div className="text-3xl font-black text-amber-400">TBA</div>
-                <span className="text-xs text-slate-400 font-medium">To Be Announced (Dalam Diskusi Klien)</span>
+                <div className="text-2xl font-extrabold text-sky-400">Harga Khusus Pilot</div>
+                <div className="text-xs text-slate-400 mt-0.5">Diskon 50% untuk Kontraktor Desain Partner</div>
               </div>
 
-              <ul className="space-y-3 text-xs text-slate-300 pt-4 border-t border-slate-800">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span>Hingga <strong>5 Proyek Aktif</strong> Simultan</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span><strong>10 Pengguna</strong> (PM, Site, Estimator)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span><strong>300x</strong> Ekstraksi Struk OCR / Bulan</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span>Deteksi Anomali Biaya Real-time</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span>Ekspor Laporan PDF Direksi & Excel</span>
-                </li>
-              </ul>
+              <div className="border-t border-slate-800 pt-4 space-y-2.5 text-xs text-slate-200">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Hingga 5 Proyek Aktif Simultan</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Unlimited User & Multi-Level Approval</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>AI Smart BOQ & Katalog Harga Tak Terbatas</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Portal Finance & 1-Click Export .xlsx</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Priority Support WhatsApp & Sesi Konsultasi</span>
+                </div>
+              </div>
             </div>
 
             <button
-              type="button"
               onClick={() => setShowFeedbackModal(true)}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-400 text-slate-950 text-center transition-all shadow-lg shadow-sky-500/20 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs text-center transition-all cursor-pointer shadow-lg shadow-sky-500/25 block"
             >
-              Beri Masukan Harga / Request Akses &rarr;
+              Ajukan Sebagai Pilot Partner &rarr;
             </button>
           </div>
 
-          {/* Tier 3: Enterprise & Utility */}
+          {/* Tier 3: Enterprise Contractor */}
           <div className="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold text-white">Enterprise</h3>
                 <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800">
-                  Utility Scale
+                  Skala Besar
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Dukungan skala utilitas untuk konsorsium pengembang PLTS skala gigawatt (GW).
+                Untuk korporasi konstruksi multi-divisi yang membutuhkan kustomisasi dan integrasi ERP.
               </p>
               <div>
-                <div className="text-3xl font-black text-white">Konsultasi</div>
-                <span className="text-xs text-slate-400 font-medium">Custom Sesuai Kebutuhan</span>
+                <div className="text-2xl font-extrabold text-white">Custom SLA</div>
+                <div className="text-xs text-slate-400 mt-0.5">Deployment On-Premise atau Private Cloud</div>
               </div>
 
-              <ul className="space-y-3 text-xs text-slate-300 pt-4 border-t border-slate-800">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                  <span>Unlimited Proyek & Pengguna</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                  <span>Dedicated Throughput AI Gateway (9Router)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                  <span>Integrasi Custom ERP / On-Premise</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                  <span>SLA 99.9% & Dedicated Manager</span>
-                </li>
-              </ul>
+              <div className="border-t border-slate-800 pt-4 space-y-2.5 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>Unlimited Proyek & Unlimited User</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>Kustomisasi Format AHSP & Format Laporan Owner</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>Integrasi API ke ERP / Software Akuntansi Internal</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>Dedicated Server & Perjanjian NDA Khusus</span>
+                </div>
+              </div>
             </div>
 
             <button
-              type="button"
               onClick={() => setShowFeedbackModal(true)}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white text-center transition-all shadow-md cursor-pointer"
+              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs text-center border border-slate-700 transition-all cursor-pointer block"
             >
-              Hubungi Tim Pengembang &rarr;
+              Hubungi Tim Kami
             </button>
           </div>
         </div>
       </section>
 
-      {/* 7. Client Feedback / Co-Creation Modal */}
+      {/* 7. Client Feedback Modal */}
       {showFeedbackModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-950 text-amber-400 border border-amber-800/60">
+                <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
                   <MessageSquare className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Masukan Klien Kontraktor PLTS</h3>
-                  <p className="text-xs text-slate-400">Bantu kami menentukan harga dan fitur yang paling pas.</p>
+                  <h3 className="text-base font-bold text-white">Program Pilot Partner Karsa Pantau</h3>
+                  <p className="text-xs text-slate-400">Masukan Anda menentukan roadmap fitur prioritas kami</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowFeedbackModal(false)}
-                className="text-slate-400 hover:text-white text-xs p-1"
+                className="text-slate-400 hover:text-white text-xs p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -631,11 +691,11 @@ export default function LandingPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Nama Perusahaan / EPC</label>
+                    <label className="block text-slate-300 font-semibold mb-1">Nama Perusahaan / Kontraktor</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. PT Surya Mandiri EPC"
+                      placeholder="e.g. PT Mandiri Karya Prima"
                       value={feedbackData.company}
                       onChange={(e) => setFeedbackData({ ...feedbackData, company: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
@@ -643,16 +703,49 @@ export default function LandingPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Email Resmi / WhatsApp</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="budi@mandirikarya.id"
+                      value={feedbackData.email}
+                      onChange={(e) => setFeedbackData({ ...feedbackData, email: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Bidang Kontraktor Utama</label>
+                    <select
+                      value={feedbackData.sector}
+                      onChange={(e) => setFeedbackData({ ...feedbackData, sector: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-sky-500"
+                    >
+                      <option value="general_contractor">Kontraktor Gedung / Umum</option>
+                      <option value="civil_infra">Infrastruktur & Sipil</option>
+                      <option value="mep">Mekanikal & Elektrikal (MEP)</option>
+                      <option value="renewable_solar">Energi Terbarukan / PLTS</option>
+                      <option value="specialist">Spesialis / Subkontraktor</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Email Resmi / WhatsApp</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="budi@suryamandiri.id"
-                    value={feedbackData.email}
-                    onChange={(e) => setFeedbackData({ ...feedbackData, email: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
-                  />
+                  <label className="block text-slate-300 font-semibold mb-1">
+                    Fitur mana yang paling mendesak dibutuhkan oleh perusahaan Anda?
+                  </label>
+                  <select
+                    value={feedbackData.priorityFeatures}
+                    onChange={(e) => setFeedbackData({ ...feedbackData, priorityFeatures: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-sky-500"
+                  >
+                    <option value="import_excel_boq">AI Smart BOQ Parser (Impor Excel BOQ & Katalog Harga)</option>
+                    <option value="finance_portal">Portal Finance (Monitoring Margin, AP Vendor & Export Excel)</option>
+                    <option value="cashflow_warning">AI Cashflow Deficit Early Warning (Kurva S Kas)</option>
+                    <option value="ai_ahsp">AI AHSP Generator (Koefisien Bahan, Upah & Alat SNI)</option>
+                    <option value="kurva_s_evm">Kurva S & EVM Otomatis Lapangan</option>
+                  </select>
                 </div>
 
                 <div>
@@ -673,11 +766,11 @@ export default function LandingPage() {
 
                 <div>
                   <label className="block text-slate-300 font-semibold mb-1">
-                    Catatan / Fitur yang paling mendesak dibutuhkan di lapangan:
+                    Catatan tambahan / kendala terbesar manajemen biaya Anda saat ini:
                   </label>
                   <textarea
-                    rows={3}
-                    placeholder="Contoh: Butuh integrasi format laporan mingguan ke Direksi, approval bertingkat, dan pencatatan sewa alat berat..."
+                    rows={2}
+                    placeholder="Contoh: Butuh impor cepat dari format BOQ tender konsultan, dan rekap hutang vendor ke orang finance..."
                     value={feedbackData.notes}
                     onChange={(e) => setFeedbackData({ ...feedbackData, notes: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-sky-500"
@@ -703,9 +796,9 @@ export default function LandingPage() {
       <footer className="border-t border-slate-800 py-12 px-4 sm:px-6 lg:px-8 bg-slate-950">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-slate-500">
           <div className="flex items-center space-x-2.5">
-            <Sun className="w-5 h-5 text-amber-400" />
+            <Building2 className="w-5 h-5 text-sky-400" />
             <span className="font-bold text-white text-sm">Karsa Pantau</span>
-            <span>&mdash; Sistem Budgeting & Monitoring Proyek Konstruksi PLTS</span>
+            <span>&mdash; Platform SaaS Manajemen Anggaran & Biaya Lapangan Proyek Konstruksi (General EPC)</span>
           </div>
 
           <div className="flex items-center gap-6">
