@@ -14,29 +14,39 @@ export default function DemoLauncherPage() {
     async function initDemo() {
       try {
         setStatusText('Mengautentikasi akun guest demo...');
-        // 1. Login sebagai demo user
-        const loginRes = await apiRequest('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: 'admin@karsapantau.id',
-            password: 'Password123!',
-          }),
-        });
-
-        setAuthToken(loginRes.accessToken);
-        
-        // 2. Tentukan organisasi demo
-        const defaultOrg = loginRes.organizations?.[0] || loginRes.activeOrganization || {
+        let token = 'demo_guest_token';
+        let org = {
           id: '0bffc122-3a58-4e1b-9f7b-105053886aa8',
-          name: 'PT Karsa Solar Nusantara (Demo)',
+          name: 'PT Karsa Konstruksi Nusantara (Demo)',
           currentPlan: 'PRO (Demo Mode)',
         };
-        setActiveOrganization(defaultOrg);
+        let userId = '864424d9-c552-4f30-8982-29ec6dfb71bb';
+
+        // 1. Coba login API resmi
+        try {
+          const loginRes = await apiRequest('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({
+              email: 'admin@karsapantau.id',
+              password: 'Password123!',
+            }),
+          });
+          if (loginRes?.accessToken) {
+            token = loginRes.accessToken;
+            userId = loginRes.user?.id || userId;
+            org = loginRes.organizations?.[0] || loginRes.activeOrganization || org;
+          }
+        } catch (apiErr) {
+          console.warn('API login skipped, using resilient demo mode session:', apiErr);
+        }
+
+        setAuthToken(token);
+        setActiveOrganization(org);
 
         localStorage.setItem(
           'karsa_user',
           JSON.stringify({
-            id: loginRes.user.id,
+            id: userId,
             name: 'Pengunjung Demo (Guest PM)',
             email: 'demo@karsapantau.id',
             role: 'pm',
@@ -44,20 +54,25 @@ export default function DemoLauncherPage() {
         );
         localStorage.setItem('karsa_demo_mode', 'true');
 
-        setStatusText('Memuat data proyek PLTS contoh...');
-        // 3. Cari proyek demo yang tersedia
-        const projectsRes = await apiRequest<{ data: any[]; total: number }>('/projects?limit=5');
-        const demoProj = projectsRes.data?.find((p) => p.id === 'de300000-0000-0000-0000-000000000500') 
-          || projectsRes.data?.[0];
-
-        if (demoProj?.id) {
-          setStatusText(`Membuka ${demoProj.name}...`);
-          router.push(`/projects/${demoProj.id}`);
-        } else {
-          router.push('/projects');
+        setStatusText('Memuat data proyek konstruksi contoh...');
+        // 2. Cari proyek demo yang tersedia atau fallback langsung ke default demo project ID
+        let targetProjectId = 'de300000-0000-0000-0000-000000000500';
+        try {
+          const projectsRes = await apiRequest<{ data: any[]; total: number }>('/projects?limit=5');
+          const demoProj = projectsRes.data?.find((p) => p.id === targetProjectId) || projectsRes.data?.[0];
+          if (demoProj?.id) {
+            targetProjectId = demoProj.id;
+          }
+        } catch {
+          // fallback to targetProjectId
         }
+
+        setStatusText('Membuka Dashboard Proyek...');
+        router.push(`/projects/${targetProjectId}`);
       } catch (err: any) {
-        setError(err.message || 'Gagal memulai sesi demo.');
+        console.error('Demo initialization error:', err);
+        // Fallback langsung ke demo project page
+        router.push('/projects/de300000-0000-0000-0000-000000000500');
       }
     }
 
@@ -79,7 +94,7 @@ export default function DemoLauncherPage() {
             <span>Mode Demo Karsa Pantau</span>
           </h2>
           <p className="text-xs text-slate-400 mt-2">
-            Menyiapkan lingkungan simulasi proyek PLTS dengan Kurva S, RAB AHSP, dan metrik EVM lengkap.
+            Menyiapkan lingkungan simulasi proyek konstruksi & EPC dengan Kurva S, RAB AHSP, dan metrik EVM lengkap.
           </p>
         </div>
 

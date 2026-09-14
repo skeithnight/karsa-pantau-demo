@@ -1,7 +1,7 @@
 {
-  "name": "Karsa Pantau — Monitoring & Budgeting PLTS",
-  "short_name": "KarsaPantau",
-  "description": "Sistem Informasi Manajemen Budgeting & Monitoring Proyek Konstruksi PLTS",
+  "name": "Karsa Pantau — Manajemen Proyek & Biaya Konstruksi",
+  "short_name": "Karsa Pantau",
+  "description": "Sistem Informasi Manajemen Budgeting & Monitoring Proyek Konstruksi & EPC",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

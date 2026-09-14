@@ -1,4 +1,18 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/v1';
+export function getApiBase(): string {
+  if (typeof window !== 'undefined') {
+    const customUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (customUrl && customUrl.startsWith('http')) {
+      // Jika diset ke localhost tetapi dibuka di domain publik, alihkan ke /api/v1
+      if (customUrl.includes('localhost') && window.location.hostname !== 'localhost') {
+        return '/api/v1';
+      }
+      return customUrl;
+    }
+    // Default paling aman di browser adalah relative path /api/v1
+    return '/api/v1';
+  }
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/v1';
+}
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -61,7 +75,9 @@ export async function apiRequest<T = any>(
     headers['Idempotency-Key'] = options.idempotencyKey;
   }
 
-  const url = `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+  const base = getApiBase();
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const url = `${base}${cleanPath}`;
   const response = await fetch(url, {
     ...options,
     headers,

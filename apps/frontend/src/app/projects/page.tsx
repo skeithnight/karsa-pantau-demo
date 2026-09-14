@@ -3,15 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, Plus, MapPin, Zap, TrendingUp, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { Layers, Plus, MapPin, Zap, TrendingUp, AlertTriangle, CheckCircle2, Clock, Building2 } from 'lucide-react';
 import { apiRequest, getAuthToken } from '../../lib/api';
 
 interface Project {
   id: string;
   name: string;
   location: string;
-  capacityMw: number;
-  status: string;
+  category?: string;
+  capacityMw?: number;
+  status: 'planning' | 'ongoing' | 'completed';
   totalRab: number;
   totalActual: number;
   variancePct: number;
@@ -21,27 +22,40 @@ interface Project {
 
 const DEFAULT_DEMO_PROJECTS: Project[] = [
   {
-    id: 'demo-p1',
-    name: 'PLTS Cirata Terapung 50MW',
+    id: 'de300000-0000-0000-0000-000000000500',
+    name: 'Pembangunan Gedung Fasilitas & MEP Cikarang (Demo)',
+    location: 'Kawasan Industri GIIC Cikarang, Jawa Barat',
+    category: 'Gedung & MEP Industri',
+    status: 'ongoing',
+    totalRab: 2451500000,
+    totalActual: 1499800000,
+    variancePct: -38.8,
+    physicalProgressPct: 74,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-p2',
+    name: 'Pekerjaan Struktur & Jembatan Tol Cisumdawu',
+    location: 'Sumedang, Jawa Barat',
+    category: 'Infrastruktur & Sipil',
+    status: 'ongoing',
+    totalRab: 18500000000,
+    totalActual: 8200000000,
+    variancePct: -12.4,
+    physicalProgressPct: 45.0,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-p3',
+    name: 'PLTS Cirata Terapung 50MW / Energi Terbarukan',
     location: 'Purwakarta, Jawa Barat',
+    category: 'Energi & Utilitas',
     capacityMw: 50.0,
     status: 'ongoing',
     totalRab: 45000000000,
     totalActual: 6100000000,
     variancePct: -4.5,
     physicalProgressPct: 14.2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'demo-p2',
-    name: 'PLTS Rooftop Kawasan Industri Cikarang 5MW',
-    location: 'Bekasi, Jawa Barat',
-    capacityMw: 5.0,
-    status: 'planning',
-    totalRab: 4500000000,
-    totalActual: 0,
-    variancePct: 0,
-    physicalProgressPct: 0,
     createdAt: new Date().toISOString(),
   },
 ];
@@ -85,10 +99,10 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
             <Layers className="w-6 h-6 text-sky-400" />
-            Portofolio Proyek PLTS
+            Portofolio Proyek Konstruksi & EPC
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Monitoring anggaran, realisasi biaya, dan progres fisik seluruh proyek konstruksi tenaga surya
+            Monitoring anggaran, realisasi biaya, dan progres fisik seluruh proyek gedung, infrastruktur, MEP, dan industri
           </p>
         </div>
 
@@ -113,11 +127,11 @@ export default function ProjectsPage() {
               className="glass-card glass-card-hover rounded-2xl p-6 border border-slate-800 flex flex-col justify-between"
             >
               <div>
-                {/* Status & Kapasitas */}
+                {/* Status & Sektor */}
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    {proj.capacityMw} MWp
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                    <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                    {proj.category || (proj.capacityMw ? `${proj.capacityMw} MWp` : 'EPC & Konstruksi')}
                   </span>
 
                   <span

@@ -297,10 +297,10 @@ function BillingSettingsContent() {
                 <span>Bantuan & Lisensi B2B</span>
               </div>
               <h3 className="text-base font-semibold text-white mt-2">
-                Butuh Custom SLA & Kapasitas PLTS Skala Besar?
+                Butuh Custom SLA & Kapasitas Proyek Skala Besar?
               </h3>
               <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Karsa Pantau Enterprise siap mendukung konsorsium utility-scale PLTS dengan multi-tenant on-premise atau private cloud hosting.
+                Karsa Pantau Enterprise siap mendukung konsorsium kontraktor & pengembang skala besar dengan multi-tenant on-premise atau private cloud hosting.
               </p>
             </div>
 
@@ -334,7 +334,7 @@ function BillingSettingsContent() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-white">Proyek Konstruksi</h3>
-                    <p className="text-[11px] text-slate-400">Proyek PLTS aktif berjalan</p>
+                    <p className="text-[11px] text-slate-400">Proyek konstruksi aktif berjalan</p>
                   </div>
                 </div>
                 <span className="text-sm font-bold text-slate-200">

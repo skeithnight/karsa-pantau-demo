@@ -15,6 +15,7 @@ import {
   CreditCard,
   Plus,
   Sparkles,
+  BookOpen,
 } from 'lucide-react';
 import { getPendingOfflineEntries } from '../lib/offline/sync-queue';
 import { clearAuthToken, getActiveOrganization, setActiveOrganization } from '../lib/api';
@@ -215,6 +216,18 @@ export function Navigation() {
               </Link>
 
               <Link
+                href="/docs"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  pathname === '/docs'
+                    ? 'bg-slate-800 text-sky-400 border border-slate-700'
+                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Dokumentasi</span>
+              </Link>
+
+              <Link
                 href="/pricing"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   pathname === '/pricing'
@@ -240,6 +253,17 @@ export function Navigation() {
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Demo</span>
+              </Link>
+              <Link
+                href="/docs"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                  pathname === '/docs'
+                    ? 'bg-slate-800 text-sky-400 border border-slate-700'
+                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+                <span>Dokumentasi</span>
               </Link>
               <Link
                 href="/pricing"

@@ -67,7 +67,7 @@ function RegisterContent() {
           </div>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Daftarkan Perusahaan PLTS Anda
+          Daftarkan Perusahaan Konstruksi & Kontraktor Anda
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-slate-400">
           Mulai trial 14 hari paket <span className="font-semibold text-sky-400">{selectedPlan}</span>. Tanpa kartu kredit.

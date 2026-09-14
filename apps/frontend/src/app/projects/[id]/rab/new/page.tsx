@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Send, Calculator, Layers, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Send, Calculator, Layers, AlertCircle, CheckCircle, Sparkles, Search, Loader2 } from 'lucide-react';
 import { WorkPackage, CostCategory } from '@karsa/shared-types';
 import { apiRequest } from '../../../../../lib/api';
 
@@ -35,6 +35,11 @@ export default function RabBuilderPage() {
   const [unit, setUnit] = useState('unit');
   const [unitPrice, setUnitPrice] = useState<number | ''>('');
 
+  // AI Semantic Search State
+  const [aiSearchQuery, setAiSearchQuery] = useState('');
+  const [aiSearching, setAiSearching] = useState(false);
+  const [aiResults, setAiResults] = useState<any | null>(null);
+
   const [items, setItems] = useState<BuilderItem[]>([
     {
       id: 'mock-1',
@@ -42,16 +47,42 @@ export default function RabBuilderPage() {
       itemCode: 'CIV-01',
       workPackage: WorkPackage.CIVIL,
       category: CostCategory.MATERIAL,
-      description: 'Struktur Racking Galvanized Steel & Mounting Bracket',
-      volume: 1500,
-      unit: 'lot',
-      unitPrice: 2450000,
-      subtotal: 3675000000,
+      description: 'Pekerjaan Struktur Kolom Beton K-300 & Pembesian',
+      volume: 450,
+      unit: 'm3',
+      unitPrice: 1850000,
+      subtotal: 832500000,
     },
   ]);
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const handleAiSearch = async () => {
+    if (!aiSearchQuery.trim() || aiSearching) return;
+    setAiSearching(true);
+    try {
+      const res = await apiRequest(`/ai/semantic-search?q=${encodeURIComponent(aiSearchQuery)}`);
+      setAiResults(res);
+    } catch (err: any) {
+      console.error('AI search failed:', err);
+      setAiResults({
+        aiExplanation: 'Pencarian semantik beralih ke pencarian teks lokal.',
+        items: [],
+      });
+    } finally {
+      setAiSearching(false);
+    }
+  };
+
+  const applyAiItem = (item: any) => {
+    setDescription(item.description || '');
+    setUnit(item.unit || 'unit');
+    setUnitPrice(item.unit_price || '');
+    if (item.category) setCategory(item.category);
+    if (item.work_package) setWorkPackage(item.work_package);
+    if (item.item_code) setItemCode(item.item_code);
+  };
 
   // Live calculation
   const currentSubtotal =
@@ -162,6 +193,94 @@ export default function RabBuilderPage() {
           <span>{message}</span>
         </div>
       )}
+
+      {/* AI Semantic Search AHSP Box */}
+      <div className="glass-card rounded-2xl p-5 border border-sky-800/50 bg-gradient-to-r from-slate-900 via-sky-950/30 to-indigo-950/20 space-y-3 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>Pencarian Cerdas Analisa Harga Satuan (AHSP) AI</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 font-mono">
+                  9Router pgvector
+                </span>
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Ketik nama pekerjaan atau material dalam bahasa sehari-hari untuk menemukan referensi harga historis dan koefisien AHSP
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Contoh: Pekerjaan pondasi bore pile d60cm, Kabel NYY 4x16mm, Sewa crane 25 ton..."
+            value={aiSearchQuery}
+            onChange={(e) => setAiSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAiSearch();
+              }
+            }}
+            className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/80 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={handleAiSearch}
+            disabled={aiSearching || !aiSearchQuery.trim()}
+            className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+          >
+            {aiSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+            <span>Cari AHSP AI</span>
+          </button>
+        </div>
+
+        {/* AI Results */}
+        {aiResults && (
+          <div className="pt-2 border-t border-slate-800/80 space-y-2 animate-in fade-in duration-200">
+            {aiResults.aiExplanation && (
+              <p className="text-xs text-sky-300 bg-sky-950/40 p-2.5 rounded-xl border border-sky-800/40">
+                💡 <strong>Rekomendasi AI:</strong> {aiResults.aiExplanation}
+              </p>
+            )}
+            {aiResults.items && aiResults.items.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {aiResults.items.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-slate-900/90 border border-slate-700/70 flex flex-col justify-between gap-2 hover:border-sky-500/60 transition-all"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                        <span className="font-mono uppercase text-sky-400">{item.item_code || 'AHSP'}</span>
+                        <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">{item.unit}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-white line-clamp-2">{item.description}</p>
+                      <p className="text-xs font-mono font-bold text-emerald-400 mt-1">
+                        {formatRupiah(item.unit_price)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => applyAiItem(item)}
+                      className="w-full py-1.5 rounded-lg bg-sky-950 hover:bg-sky-900 text-sky-300 text-[11px] font-semibold border border-sky-800/60 transition-all cursor-pointer"
+                    >
+                      + Terapkan ke Form RAB
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">Tidak ada item yang cocok dengan kata kunci tersebut.</p>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Tambah Item */}

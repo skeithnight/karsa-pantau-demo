@@ -38,7 +38,7 @@ export default function PricingPage() {
       priceSubtext: 'Gratis selama masa evaluasi Beta',
       badge: 'Coba Gratis',
       features: [
-        '1 Proyek Konstruksi PLTS Riil',
+        '1 Proyek Konstruksi Riil',
         '3 Pengguna (PM, Estimator, Lapangan)',
         '50 Ekstraksi Struk OCR / Bulan',
         'Kalkulator EVM & Kurva S Otomatis',
@@ -53,7 +53,7 @@ export default function PricingPage() {
       code: 'STARTER',
       name: 'Starter EPC',
       tierLabel: 'Co-Creation / Design Partner',
-      description: 'Kapasitas fleksibel untuk kontraktor dan installer PLTS komersial & industri dengan multi-proyek.',
+      description: 'Kapasitas fleksibel untuk kontraktor umum, spesialis sipil, MEP, dan energi dengan multi-proyek.',
       priceDisplay: 'TBA',
       priceSubtext: 'To Be Announced (Dalam Diskusi Klien)',
       badge: 'Rekomendasi Kontraktor',
@@ -72,12 +72,12 @@ export default function PricingPage() {
     },
     {
       code: 'ENTERPRISE',
-      name: 'Enterprise Utility',
-      tierLabel: 'Utility Scale PLTS',
-      description: 'Dukungan khusus konsorsium pengembang PLTS skala gigawatt dengan integrasi ERP custom.',
+      name: 'Enterprise EPC',
+      tierLabel: 'General Contractor & Konsorsium',
+      description: 'Dukungan khusus konsorsium kontraktor skala besar dengan integrasi ERP custom & AI throughput tinggi.',
       priceDisplay: 'Konsultasi',
       priceSubtext: 'Custom Sesuai Kebutuhan',
-      badge: 'Skala Utilitas',
+      badge: 'Skala Korporat',
       features: [
         'Unlimited Proyek & Anggota Tim',
         'Dedicated Throughput AI (9Router)',
@@ -114,13 +114,13 @@ export default function PricingPage() {
       <div className="max-w-4xl mx-auto text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-800/80 text-xs font-semibold text-amber-300">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Program Pilot Partner & Co-Creation PLTS</span>
+          <span>Program Pilot Partner & Co-Creation EPC</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
           Paket Berlangganan Tahap Awal
         </h1>
         <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Karsa Pantau sedang dalam tahap validasi pilot bersama praktisi kontraktor EPC PLTS. 
+          Karsa Pantau sedang dalam tahap validasi pilot bersama praktisi kontraktor EPC & konstruksi. 
           Kami menyediakan <strong>Free Trial</strong> untuk evaluasi langsung, dan membuka program 
           <strong> Starter EPC</strong> dengan harga yang disesuaikan dari masukan Anda.
         </p>
@@ -208,7 +208,7 @@ export default function PricingPage() {
           Ingin Menentukan Fitur & Skema Biaya yang Cocok untuk Proyek Anda?
         </h3>
         <p className="text-xs text-slate-300 max-w-xl mx-auto leading-relaxed">
-          Kami mendengarkan langsung kebutuhan para kontraktor PLTS di Indonesia. Sampaikan ekspektasi harga 
+          Kami mendengarkan langsung kebutuhan para kontraktor & pengembang proyek di Indonesia. Sampaikan ekspektasi harga 
           dan fitur prioritas Anda untuk mendapatkan status prioritas serta diskon khusus saat rilis publik.
         </p>
         <button
@@ -231,7 +231,7 @@ export default function PricingPage() {
                   <MessageSquare className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Masukan Klien Kontraktor PLTS</h3>
+                  <h3 className="text-base font-bold text-white">Masukan Klien Kontraktor & EPC</h3>
                   <p className="text-xs text-slate-400">Bantu kami merancang harga & kapasitas ideal.</p>
                 </div>
               </div>
@@ -309,7 +309,7 @@ export default function PricingPage() {
 
                 <div>
                   <label className="block text-slate-300 font-semibold mb-1">
-                    Fitur yang paling penting untuk kebutuhan konstruksi PLTS Anda:
+                    Fitur yang paling penting untuk kebutuhan proyek konstruksi & EPC Anda:
                   </label>
                   <textarea
                     rows={3}

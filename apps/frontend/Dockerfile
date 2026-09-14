@@ -12,6 +12,9 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
 COPY packages/shared-types ./packages/shared-types
 COPY apps/frontend ./apps/frontend
 
+ARG NEXT_PUBLIC_API_BASE_URL=/api/v1
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
 # Install dependencies and compile Next.js standalone build
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @karsa/shared-types run build

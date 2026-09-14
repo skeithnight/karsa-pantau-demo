@@ -4,8 +4,8 @@ import { Providers } from '../components/Providers';
 import { Navigation } from '../components/Navigation';
 
 export const metadata = {
-  title: 'Karsa Pantau — Sistem Budgeting & Monitoring Proyek Konstruksi PLTS',
-  description: 'Aplikasi Enterprise PWA untuk RAB, Realisasi Biaya, dan EVM Proyek Pembangkit Listrik Tenaga Surya',
+  title: 'Karsa Pantau — Sistem Manajemen Anggaran & Kontrol Realisasi Konstruksi (General EPC)',
+  description: 'Platform Enterprise SaaS untuk RAB AHSP, Realisasi Biaya Lapangan, dan EVM Proyek Konstruksi Gedung, Infrastruktur, MEP, dan Energi Terbarukan.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

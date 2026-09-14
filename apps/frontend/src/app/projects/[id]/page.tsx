@@ -14,8 +14,15 @@ import {
   Zap,
   CheckCircle2,
   AlertCircle,
+  Sparkles,
+  Bot,
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
+  Building2,
 } from 'lucide-react';
 import { apiRequest } from '../../../lib/api';
+import { AiChatWidget } from '../../../components/AiChatWidget';
 
 export default function ProjectDashboardPage() {
   const params = useParams();
@@ -23,30 +30,94 @@ export default function ProjectDashboardPage() {
 
   const [project, setProject] = useState<any>({
     id: projectId,
-    name: 'PLTS Cirata Terapung 50MW',
-    location: 'Purwakarta, Jawa Barat',
-    capacityMw: 50.0,
+    name: 'Pembangunan Gedung Fasilitas & MEP Cikarang (Demo)',
+    location: 'Kawasan Industri GIIC Cikarang, Jawa Barat',
     status: 'ongoing',
-    totalRab: 45000000000,
-    totalActual: 6100000000,
-    variancePct: -4.5,
-    physicalProgressPct: 14.2,
+    totalRab: 2451500000,
+    totalActual: 1499800000,
+    variancePct: -38.8,
+    physicalProgressPct: 74.0,
   });
 
   const [rabData, setRabData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // AI Live Insights State
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiInsight, setAiInsight] = useState<{
+    type: 'anomaly' | 'forecast';
+    title: string;
+    text: string;
+    timestamp: string;
+    anomalies?: any[];
+  } | null>(null);
+
   useEffect(() => {
-    // Ambil detail proyek & RAB aktif
+    // Ambil detail proyek, RAB aktif, dan insight AI sebelumnya jika ada
     Promise.all([
       apiRequest(`/projects/${projectId}`).catch(() => null),
       apiRequest(`/projects/${projectId}/rab/active`).catch(() => null),
-    ]).then(([projRes, activeRab]) => {
+      apiRequest(`/ai/insights/${projectId}?limit=1`).catch(() => null),
+    ]).then(([projRes, activeRab, insightsRes]) => {
       if (projRes) setProject(projRes);
       if (activeRab) setRabData(activeRab);
+      if (insightsRes && insightsRes.length > 0) {
+        const lastInsight = insightsRes[0];
+        setAiInsight({
+          type: lastInsight.type,
+          title: lastInsight.type === 'anomaly' ? 'Hasil Audit Anomali Terakhir' : 'Proyeksi EVM Terakhir',
+          text: lastInsight.output,
+          timestamp: new Date(lastInsight.created_at).toLocaleTimeString('id-ID'),
+        });
+      }
       setLoading(false);
     });
   }, [projectId]);
+
+  const handleTriggerAnomaly = async () => {
+    setAiLoading(true);
+    try {
+      const res = await apiRequest(`/ai/anomalies/${projectId}`);
+      setAiInsight({
+        type: 'anomaly',
+        title: `Audit Anomali AI (${res.anomaliesFound || 0} deviasi terdeteksi)`,
+        text: res.aiAnalysis || 'Seluruh pos pekerjaan berada dalam batas toleransi anggaran (efisien).',
+        timestamp: new Date().toLocaleTimeString('id-ID'),
+        anomalies: res.anomalies || [],
+      });
+    } catch (err: any) {
+      setAiInsight({
+        type: 'anomaly',
+        title: 'Audit Anomali AI',
+        text: `Pemeriksaan anomali via 9Router: ${err.message || 'Server timeout'}`,
+        timestamp: new Date().toLocaleTimeString('id-ID'),
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleTriggerForecast = async () => {
+    setAiLoading(true);
+    try {
+      const res = await apiRequest(`/ai/forecast/${projectId}`);
+      setAiInsight({
+        type: 'forecast',
+        title: 'Analisis Proyeksi EVM & Forecast EAC',
+        text: res.aiNarrative || 'Proyeksi EVM berhasil disusun.',
+        timestamp: new Date().toLocaleTimeString('id-ID'),
+      });
+    } catch (err: any) {
+      setAiInsight({
+        type: 'forecast',
+        title: 'Analisis Proyeksi EVM & Forecast EAC',
+        text: `Kalkulasi forecast EVM via 9Router: ${err.message || 'Server timeout'}`,
+        timestamp: new Date().toLocaleTimeString('id-ID'),
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -64,27 +135,27 @@ export default function ProjectDashboardPage() {
       item_code: 'CIV-01',
       work_package: 'CIVIL',
       category: 'material',
-      description: 'Floating Mounting Structure & Ponton HDPE',
-      volume: 90000,
-      unit: 'unit',
-      unit_price: 120000,
-      subtotal: 10800000000,
-      total_actual: 3200000000,
-      variance_pct: -70.3,
+      description: 'Pekerjaan Struktur Kolom & Balok Beton Bertulang K-300',
+      volume: 450,
+      unit: 'm3',
+      unit_price: 1850000,
+      subtotal: 832500000,
+      total_actual: 520000000,
+      variance_pct: -37.5,
     },
     {
       id: 'i2',
       wbs_code: '2.0',
-      item_code: 'EL-DC-01',
-      work_package: 'ELECTRICAL_DC',
+      item_code: 'MEP-01',
+      work_package: 'ELECTRICAL_AC',
       category: 'material',
-      description: 'Modul PV Monokristalin Tier-1 550Wp',
-      volume: 91000,
-      unit: 'Wp',
-      unit_price: 285000,
-      subtotal: 25935000000,
-      total_actual: 2900000000,
-      variance_pct: -88.8,
+      description: 'Instalasi Panel Distribusi Utama & Kabel Feeder NYY 4x120mm',
+      volume: 1,
+      unit: 'lot',
+      unit_price: 650000000,
+      subtotal: 650000000,
+      total_actual: 480000000,
+      variance_pct: -26.1,
     },
   ];
 
@@ -94,9 +165,9 @@ export default function ProjectDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1 font-mono">
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              {project.capacityMw} MWp
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 flex items-center gap-1 font-medium">
+              <Building2 className="w-3.5 h-3.5 text-sky-400" />
+              {project.capacityMw ? `${project.capacityMw} MWp` : 'Gedung & MEP Industri'}
             </span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 uppercase font-semibold">
               {project.status}
@@ -222,6 +293,88 @@ export default function ProjectDashboardPage() {
         </div>
       </div>
 
+      {/* AI Copilot & Live Insights Panel */}
+      <div className="glass-card rounded-2xl p-6 border border-sky-800/50 bg-gradient-to-br from-slate-900 via-sky-950/20 to-indigo-950/30 space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">AI Cost & Risk Copilot</h2>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800 font-mono">
+                  9Router • Claude 3.5 Sonnet
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Deteksi anomali deviasi harga, audit batas toleransi RAB, dan proyeksi EVM cerdas
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={aiLoading}
+              onClick={handleTriggerAnomaly}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+              <span>Jalankan Audit Anomali</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={aiLoading}
+              onClick={handleTriggerForecast}
+              className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-sky-600/20 cursor-pointer disabled:opacity-50"
+            >
+              {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              <span>Proyeksi EAC & EVM</span>
+            </button>
+          </div>
+        </div>
+
+        {aiInsight ? (
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 space-y-2.5 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-sky-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                {aiInsight.title}
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">Diperbarui: {aiInsight.timestamp}</span>
+            </div>
+            <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{aiInsight.text}</p>
+            {aiInsight.anomalies && aiInsight.anomalies.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-slate-800 space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                  Item Dengan Deviasi Signifikan:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {aiInsight.anomalies.map((an: any, i: number) => (
+                    <div key={i} className="p-2 rounded-lg bg-slate-950/60 border border-amber-900/40 text-[11px] flex justify-between items-center">
+                      <span className="text-slate-300 font-medium truncate max-w-[200px]">{an.description}</span>
+                      <span className={`font-mono font-bold ${an.variancePct > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {an.variancePct > 0 ? `+${an.variancePct}%` : `${an.variancePct}%`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-dashed border-slate-800 text-center py-5 space-y-1">
+            <Sparkles className="w-6 h-6 text-slate-500 mx-auto mb-1" />
+            <p className="text-xs text-slate-300 font-medium">Belum ada analisis AI yang dijalankan untuk sesi ini</p>
+            <p className="text-[11px] text-slate-500">
+              Klik <strong>"Jalankan Audit Anomali"</strong> atau <strong>"Proyeksi EAC & EVM"</strong> di atas, atau klik tombol <strong>AI Copilot Proyek</strong> di pojok kanan bawah untuk tanya jawab interaktif.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Work Breakdown Structure (WBS) Breakdown Table */}
       <div className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
         <div className="flex items-center justify-between">
@@ -285,6 +438,9 @@ export default function ProjectDashboardPage() {
           </table>
         </div>
       </div>
+
+      {/* Floating AI Project Copilot Assistant */}
+      <AiChatWidget projectId={projectId} projectName={project.name} />
     </div>
   );
 }

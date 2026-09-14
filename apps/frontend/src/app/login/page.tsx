@@ -86,7 +86,7 @@ export default function LoginPage() {
             Karsa <span className="text-sky-400">Pantau</span>
           </h2>
           <p className="mt-1 text-sm text-slate-400">
-            Platform Budgeting & Monitoring Proyek Konstruksi PLTS
+            Platform Manajemen Anggaran & Kontrol Realisasi Konstruksi (General EPC)
           </p>
         </div>
 
