@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Query, Req } from '@nestjs/common';
 import { DailyLogsService, UpsertDailyLogDto } from './daily-logs.service';
 
-@Controller('api/v1/projects/:projectId/daily-logs')
+@Controller('projects/:projectId/daily-logs')
 export class DailyLogsController {
   constructor(private readonly dailyLogsService: DailyLogsService) {}
 

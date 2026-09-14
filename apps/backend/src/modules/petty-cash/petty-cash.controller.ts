@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, Req } from '@nestjs/common';
 import { PettyCashService, CreatePettyCashDto, SettlePettyCashDto } from './petty-cash.service';
 
-@Controller('api/v1/projects/:projectId/petty-cash')
+@Controller('projects/:projectId/petty-cash')
 export class PettyCashController {
   constructor(private readonly pettyCashService: PettyCashService) {}
 
