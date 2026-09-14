@@ -52,22 +52,57 @@ export default function ProjectDashboardPage() {
     anomalies?: any[];
   } | null>(null);
 
+  // Helper function to safely extract string text from various insight output formats
+  const extractInsightText = (output: any): string => {
+    if (!output) return '';
+    if (typeof output === 'string') {
+      try {
+        const parsed = JSON.parse(output);
+        if (typeof parsed === 'object' && parsed !== null) {
+          return parsed.narrativeSummary || parsed.narrativeForecast || parsed.response || parsed.text || output;
+        }
+      } catch {
+        return output;
+      }
+      return output;
+    }
+    if (typeof output === 'object') {
+      return (
+        output.narrativeSummary ||
+        output.narrativeForecast ||
+        output.response ||
+        output.text ||
+        JSON.stringify(output)
+      );
+    }
+    return String(output);
+  };
+
   useEffect(() => {
     // Ambil detail proyek, RAB aktif, dan insight AI sebelumnya jika ada
     Promise.all([
       apiRequest(`/projects/${projectId}`).catch(() => null),
       apiRequest(`/projects/${projectId}/rab/active`).catch(() => null),
-      apiRequest(`/ai/insights/${projectId}?limit=1`).catch(() => null),
+      apiRequest(`/ai/insights/${projectId}?limit=5`).catch(() => null),
     ]).then(([projRes, activeRab, insightsRes]) => {
       if (projRes) setProject(projRes);
       if (activeRab) setRabData(activeRab);
-      if (insightsRes && insightsRes.length > 0) {
-        const lastInsight = insightsRes[0];
+      if (Array.isArray(insightsRes) && insightsRes.length > 0) {
+        const candidate =
+          insightsRes.find((i: any) => i.type === 'anomaly' || i.type === 'forecast') || insightsRes[0];
+        const text = extractInsightText(candidate.output);
+        const title =
+          candidate.type === 'anomaly'
+            ? 'Hasil Audit Anomali Terakhir'
+            : candidate.type === 'forecast'
+            ? 'Proyeksi EVM Terakhir'
+            : 'Wawasan AI Terakhir';
+
         setAiInsight({
-          type: lastInsight.type,
-          title: lastInsight.type === 'anomaly' ? 'Hasil Audit Anomali Terakhir' : 'Proyeksi EVM Terakhir',
-          text: lastInsight.output,
-          timestamp: new Date(lastInsight.created_at).toLocaleTimeString('id-ID'),
+          type: candidate.type,
+          title,
+          text: text || 'Wawasan AI tersedia.',
+          timestamp: new Date(candidate.created_at).toLocaleTimeString('id-ID'),
         });
       }
       setLoading(false);
@@ -78,10 +113,13 @@ export default function ProjectDashboardPage() {
     setAiLoading(true);
     try {
       const res = await apiRequest(`/ai/anomalies/${projectId}`);
+      const text =
+        extractInsightText(res.aiAnalysis) ||
+        'Seluruh pos pekerjaan berada dalam batas toleransi anggaran (efisien).';
       setAiInsight({
         type: 'anomaly',
         title: `Audit Anomali AI (${res.anomaliesFound || 0} deviasi terdeteksi)`,
-        text: res.aiAnalysis || 'Seluruh pos pekerjaan berada dalam batas toleransi anggaran (efisien).',
+        text,
         timestamp: new Date().toLocaleTimeString('id-ID'),
         anomalies: res.anomalies || [],
       });
@@ -101,10 +139,11 @@ export default function ProjectDashboardPage() {
     setAiLoading(true);
     try {
       const res = await apiRequest(`/ai/forecast/${projectId}`);
+      const text = extractInsightText(res.aiNarrative) || 'Proyeksi EVM berhasil disusun.';
       setAiInsight({
         type: 'forecast',
         title: 'Analisis Proyeksi EVM & Forecast EAC',
-        text: res.aiNarrative || 'Proyeksi EVM berhasil disusun.',
+        text,
         timestamp: new Date().toLocaleTimeString('id-ID'),
       });
     } catch (err: any) {
@@ -345,7 +384,9 @@ export default function ProjectDashboardPage() {
               </span>
               <span className="text-[10px] text-slate-500 font-mono">Diperbarui: {aiInsight.timestamp}</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{aiInsight.text}</p>
+            <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
+              {typeof aiInsight.text === 'string' ? aiInsight.text : extractInsightText(aiInsight.text)}
+            </p>
             {aiInsight.anomalies && aiInsight.anomalies.length > 0 && (
               <div className="mt-3 pt-3 border-t border-slate-800 space-y-1.5">
                 <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
