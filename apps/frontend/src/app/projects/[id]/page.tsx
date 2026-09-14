@@ -23,6 +23,7 @@ import {
   GitCompare,
   Calendar,
   Wallet,
+  Printer,
 } from 'lucide-react';
 
 import { apiRequest } from '../../../lib/api';
@@ -260,6 +261,14 @@ export default function ProjectDashboardPage() {
           >
             <Wallet className="w-4 h-4 text-purple-400" />
             Kasbon Lapangan (Petty Cash)
+          </Link>
+
+          <Link
+            href={`/projects/${projectId}/report`}
+            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/20 flex items-center gap-1.5"
+          >
+            <Printer className="w-4 h-4" />
+            Laporan Eksekutif (PDF)
           </Link>
         </div>
       </div>
