@@ -1,9 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Send, Calculator, Layers, AlertCircle, AlertTriangle, CheckCircle, Sparkles, Search, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Send,
+  Calculator,
+  Layers,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Sparkles,
+  Search,
+  Loader2,
+  FileSpreadsheet,
+  UploadCloud,
+  Download,
+} from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { WorkPackage, CostCategory } from '@karsa/shared-types';
 import { apiRequest } from '../../../../../lib/api';
 
@@ -24,6 +41,7 @@ export default function RabBuilderPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [wbsCode, setWbsCode] = useState('1.1');
@@ -39,6 +57,11 @@ export default function RabBuilderPage() {
   const [aiSearchQuery, setAiSearchQuery] = useState('');
   const [aiSearching, setAiSearching] = useState(false);
   const [aiResults, setAiResults] = useState<any | null>(null);
+
+  // Excel Ingestion State
+  const [excelImporting, setExcelImporting] = useState(false);
+  const [excelSuccessMsg, setExcelSuccessMsg] = useState<string | null>(null);
+  const [excelErrorMsg, setExcelErrorMsg] = useState<string | null>(null);
 
   const [items, setItems] = useState<BuilderItem[]>([
     {
@@ -57,6 +80,7 @@ export default function RabBuilderPage() {
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleAiSearch = async () => {
     if (!aiSearchQuery.trim() || aiSearching) return;
@@ -68,7 +92,7 @@ export default function RabBuilderPage() {
       console.error('AI search failed:', err);
       setAiResults({
         aiExplanation: 'Pencarian semantik beralih ke pencarian teks lokal.',
-        items: [],
+        candidates: [],
       });
     } finally {
       setAiSearching(false);
@@ -78,11 +102,141 @@ export default function RabBuilderPage() {
   const applyAiItem = (item: any) => {
     setDescription(item.description || '');
     setUnit(item.unit || 'unit');
-    setUnitPrice(item.unit_price || '');
-    if (item.category) setCategory(item.category);
-    if (item.work_package) setWorkPackage(item.work_package);
-    if (item.item_code) setItemCode(item.item_code);
+    const price = item.unitPrice !== undefined ? item.unitPrice : item.unit_price;
+    setUnitPrice(price !== undefined ? Number(price) : '');
+    if (item.category) {
+      const catLower = String(item.category).toLowerCase();
+      if (catLower.includes('upah')) setCategory(CostCategory.UPAH);
+      else if (catLower.includes('alat')) setCategory(CostCategory.ALAT);
+      else setCategory(CostCategory.MATERIAL);
+    }
+    if (item.workPackage || item.work_package) {
+      const wp = String(item.workPackage || item.work_package).toUpperCase();
+      if (wp.includes('ELECTRICAL_AC')) setWorkPackage(WorkPackage.ELECTRICAL_AC);
+      else if (wp.includes('ELECTRICAL_DC')) setWorkPackage(WorkPackage.ELECTRICAL_DC);
+      else if (wp.includes('SCADA')) setWorkPackage(WorkPackage.SCADA_MONITORING);
+      else if (wp.includes('TESTING')) setWorkPackage(WorkPackage.TESTING_COMMISSIONING);
+      else setWorkPackage(WorkPackage.CIVIL);
+    }
+    const code = item.itemCode || item.item_code;
+    if (code) setItemCode(code);
   };
+
+  // Download Sample BOQ Excel / CSV Template
+  const handleDownloadTemplate = () => {
+    const csvContent =
+      'Kode WBS,Kode Item,Paket Pekerjaan,Kategori Biaya,Deskripsi Pekerjaan,Volume,Satuan,Harga Satuan\n' +
+      '1.1,CIV-01,CIVIL,material,Pekerjaan Struktur Kolom Beton K-300 & Pembesian,450,m3,1850000\n' +
+      '1.2,CIV-02,CIVIL,material,Pasang Bekisting Balok & Kolom Kayu Meranti,1200,m2,235000\n' +
+      '2.1,EL-01,ELECTRICAL_AC,material,Kabel Power AC NYY 4x16 mm2 Supreme,500,meter,145000\n' +
+      '2.2,EL-02,ELECTRICAL_DC,material,Modul Surya Monokristalin Tier-1 550Wp,910,unit,1650000\n' +
+      '3.1,LAB-01,CIVIL,upah,Upah Mandor & Tukang Besi Konstruksi,60,mandays,180000\n';
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Template_BOQ_Karsa_Pantau.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Handle Excel / CSV File Parsing
+  const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setExcelImporting(true);
+    setExcelErrorMsg(null);
+    setExcelSuccessMsg(null);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        if (!jsonRows || jsonRows.length === 0) {
+          setExcelErrorMsg('File spreadsheet kosong atau format sheet tidak terbaca.');
+          setExcelImporting(false);
+          return;
+        }
+
+        const newItems: BuilderItem[] = [];
+        let index = items.length + 1;
+
+        for (const row of jsonRows) {
+          // Flexible key lookup
+          const keys = Object.keys(row);
+          const findKey = (candidates: string[]) => {
+            return keys.find((k) => candidates.some((c) => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(c)));
+          };
+
+          const wbsK = findKey(['wbs', 'kodewbs']) || '';
+          const codeK = findKey(['kodeitem', 'itemcode', 'kode', 'item']) || '';
+          const descK = findKey(['deskripsi', 'uraian', 'pekerjaan', 'itempekerjaan', 'namabarang']) || '';
+          const volK = findKey(['volume', 'vol', 'qty', 'kuantitas', 'jumlah']) || '';
+          const unitK = findKey(['satuan', 'unit', 'sat']) || '';
+          const priceK = findKey(['hargasatuan', 'harga', 'tarif', 'unitprice', 'price']) || '';
+          const catK = findKey(['kategori', 'category', 'jenis']) || '';
+          const wpK = findKey(['paket', 'workpackage', 'divisi']) || '';
+
+          const descVal = row[descK] || '';
+          if (!descVal || String(descVal).trim() === '') continue;
+
+          const volVal = parseFloat(String(row[volK]).replace(/[^0-9.-]/g, '')) || 1;
+          const priceVal = parseFloat(String(row[priceK]).replace(/[^0-9.-]/g, '')) || 0;
+
+          // Categorization
+          let assignedCat = CostCategory.MATERIAL;
+          const catStr = String(row[catK] || '').toLowerCase();
+          if (catStr.includes('upah') || catStr.includes('tenaga') || catStr.includes('labor')) assignedCat = CostCategory.UPAH;
+          else if (catStr.includes('alat') || catStr.includes('sewa') || catStr.includes('machin')) assignedCat = CostCategory.ALAT;
+
+          // Work Package
+          let assignedWp = WorkPackage.CIVIL;
+          const wpStr = String(row[wpK] || '').toUpperCase();
+          if (wpStr.includes('ELECTRICAL_AC') || wpStr.includes('AC')) assignedWp = WorkPackage.ELECTRICAL_AC;
+          else if (wpStr.includes('ELECTRICAL_DC') || wpStr.includes('DC') || wpStr.includes('SURYA') || wpStr.includes('SOLAR')) assignedWp = WorkPackage.ELECTRICAL_DC;
+          else if (wpStr.includes('SCADA')) assignedWp = WorkPackage.SCADA_MONITORING;
+
+          newItems.push({
+            id: `imp-${Date.now()}-${index++}`,
+            wbsCode: String(row[wbsK] || `${Math.floor(index / 10) + 1}.${index % 10}`).trim(),
+            itemCode: String(row[codeK] || `ITM-${index}`).trim(),
+            workPackage: assignedWp,
+            category: assignedCat,
+            description: String(descVal).trim(),
+            volume: volVal,
+            unit: String(row[unitK] || 'unit').trim(),
+            unitPrice: priceVal,
+            subtotal: volVal * priceVal,
+          });
+        }
+
+        if (newItems.length === 0) {
+          setExcelErrorMsg('Tidak ditemukan baris pekerjaan yang valid dalam file Excel.');
+        } else {
+          setItems((prev) => [...prev, ...newItems]);
+          setExcelSuccessMsg(`Berhasil mengimpor ${newItems.length} item pekerjaan dari file Excel/BOQ!`);
+          setTimeout(() => setExcelSuccessMsg(null), 6000);
+        }
+      } catch (err: any) {
+        console.error('Error parsing Excel:', err);
+        setExcelErrorMsg(`Gagal memproses file Excel: ${err.message}`);
+      } finally {
+        setExcelImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
 
   // Live calculation
   const currentSubtotal =
@@ -91,8 +245,6 @@ export default function RabBuilderPage() {
       : 0;
 
   const totalRab = items.reduce((acc, item) => acc + item.subtotal, 0);
-
-  const [formError, setFormError] = useState<string | null>(null);
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -259,32 +411,41 @@ export default function RabBuilderPage() {
                 💡 <strong>Rekomendasi AI:</strong> {aiResults.aiExplanation}
               </p>
             )}
-            {aiResults.items && aiResults.items.length > 0 ? (
+            {((aiResults.candidates && aiResults.candidates.length > 0) || (aiResults.items && aiResults.items.length > 0)) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {aiResults.items.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl bg-slate-900/90 border border-slate-700/70 flex flex-col justify-between gap-2 hover:border-sky-500/60 transition-all"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                        <span className="font-mono uppercase text-sky-400">{item.item_code || 'AHSP'}</span>
-                        <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">{item.unit}</span>
-                      </div>
-                      <p className="text-xs font-semibold text-white line-clamp-2">{item.description}</p>
-                      <p className="text-xs font-mono font-bold text-emerald-400 mt-1">
-                        {formatRupiah(item.unit_price)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => applyAiItem(item)}
-                      className="w-full py-1.5 rounded-lg bg-sky-950 hover:bg-sky-900 text-sky-300 text-[11px] font-semibold border border-sky-800/60 transition-all cursor-pointer"
+                {(aiResults.candidates || aiResults.items).map((item: any, idx: number) => {
+                  const itemCodeDisplay = item.itemCode || item.item_code || 'AHSP';
+                  const unitPriceVal = item.unitPrice !== undefined ? item.unitPrice : item.unit_price;
+                  const sourceName = item.sourceProjectName || 'Katalog Standar';
+
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-slate-900/90 border border-slate-700/70 flex flex-col justify-between gap-2 hover:border-sky-500/60 transition-all"
                     >
-                      + Terapkan ke Form RAB
-                    </button>
-                  </div>
-                ))}
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                          <span className="font-mono uppercase text-sky-400 font-bold">{itemCodeDisplay}</span>
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">{item.unit}</span>
+                        </div>
+                        <p className="text-xs font-semibold text-white line-clamp-2">{item.description}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs font-mono font-bold text-emerald-400">
+                            {formatRupiah(unitPriceVal || 0)}
+                          </p>
+                          <span className="text-[9px] text-slate-500 truncate max-w-[100px]">{sourceName}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => applyAiItem(item)}
+                        className="w-full py-1.5 rounded-lg bg-sky-950 hover:bg-sky-900 text-sky-300 text-[11px] font-semibold border border-sky-800/60 transition-all cursor-pointer"
+                      >
+                        + Terapkan ke Form RAB
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-xs text-slate-400">Tidak ada item yang cocok dengan kata kunci tersebut.</p>
@@ -292,6 +453,77 @@ export default function RabBuilderPage() {
           </div>
         )}
       </div>
+
+      {/* Excel BOQ Ingestion Card */}
+      <div className="glass-card rounded-2xl p-4 border border-emerald-800/40 bg-gradient-to-r from-slate-900 via-emerald-950/20 to-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+            <FileSpreadsheet className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-bold text-white">Import BOQ dari Dokumen Excel (.xlsx / .xls / .csv)</h4>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">
+                Smart BOQ Parser
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Unggah RAB tender Owner atau daftar harga vendor; sistem otomatis memetakan kolom WBS, kategori, volume, dan harga satuan.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleExcelUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={handleDownloadTemplate}
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Unduh Contoh Template Format BOQ (.CSV)"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Unduh Template</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={excelImporting}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 disabled:opacity-50 transition-all cursor-pointer"
+          >
+            {excelImporting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Memproses Excel...</span>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="w-4 h-4" />
+                <span>+ Upload BOQ Excel</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {excelSuccessMsg && (
+        <div className="p-3.5 rounded-xl bg-emerald-950/90 border border-emerald-700/90 text-emerald-200 text-xs flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{excelSuccessMsg}</span>
+        </div>
+      )}
+
+      {excelErrorMsg && (
+        <div className="p-3.5 rounded-xl bg-rose-950/90 border border-rose-700/90 text-rose-200 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <span>{excelErrorMsg}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Tambah Item */}

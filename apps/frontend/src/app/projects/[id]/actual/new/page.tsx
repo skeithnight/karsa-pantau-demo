@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,6 +14,8 @@ import {
   Building2,
   Calendar,
   Layers,
+  ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
 import { apiRequest } from '../../../../../lib/api';
 import { queueOfflineActualEntry } from '../../../../../lib/offline/sync-queue';
@@ -22,6 +24,21 @@ export default function ActualInputPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const uStr = localStorage.getItem('karsa_user');
+    if (uStr) {
+      try {
+        setCurrentUser(JSON.parse(uStr));
+      } catch {
+        // no-op
+      }
+    } else {
+      // Default to mandor/supervisor for testing
+      setCurrentUser({ name: 'Agus Setiawan (Mandor)', role: 'supervisor' });
+    }
+  }, []);
 
   // Mock available RAB items
   const rabItems = [
@@ -133,6 +150,9 @@ export default function ActualInputPage() {
     }
   };
 
+  const userRole = (currentUser?.role || 'supervisor').toLowerCase();
+  const isUnauthorizedRole = currentUser && !['admin', 'pm', 'supervisor', 'mandor'].includes(userRole);
+
   return (
     <div className="max-w-2xl mx-auto space-y-6 py-6 px-4">
       {/* Header */}
@@ -153,7 +173,54 @@ export default function ActualInputPage() {
         </p>
       </div>
 
-      {statusMessage && (
+      {/* Role Restriction Guard Card */}
+      {isUnauthorizedRole && (
+        <div className="p-6 rounded-2xl bg-slate-900 border border-amber-800/80 space-y-4 shadow-xl">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Akses Dibatasi — Khusus Site Supervisor & PM</h3>
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                Sesuai prinsip tata kelola proyek konstruksi (<em>Separation of Duties</em>), formulir input realisasi belanja fisik lapangan dan upload nota hanya diizinkan untuk peran <strong>Site Supervisor / Mandor</strong>, <strong>Project Manager</strong>, atau <strong>Administrator</strong>.
+              </p>
+              <div className="mt-2.5 flex items-center gap-2">
+                <span className="text-[11px] text-slate-400">Peran Anda saat ini:</span>
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono uppercase bg-amber-950 text-amber-300 border border-amber-800 font-bold">
+                  {currentUser?.role || 'Guest'}
+                </span>
+                <span className="text-[11px] text-slate-500">(Hanya memiliki hak lihat atau estimasi)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+            <Link
+              href={`/projects/${projectId}`}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Kembali ke Dashboard Proyek</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => {
+                const updated = { ...currentUser, role: 'supervisor' };
+                setCurrentUser(updated);
+                localStorage.setItem('karsa_user', JSON.stringify(updated));
+              }}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Beralih ke Mandor Lapangan (Demo)</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!isUnauthorizedRole && statusMessage && (
         <div
           className={`p-4 rounded-xl border text-xs flex items-center gap-2.5 ${
             statusMessage.type === 'success'
@@ -174,8 +241,10 @@ export default function ActualInputPage() {
         </div>
       )}
 
-      {/* Warning Banner Bila Overbudget */}
-      {isOverbudget && (
+      {!isUnauthorizedRole && (
+        <>
+          {/* Warning Banner Bila Overbudget */}
+          {isOverbudget && (
         <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-200 text-xs flex items-start gap-3 shadow-lg shadow-rose-950/40 animate-pulse">
           <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
           <div>
@@ -335,7 +404,9 @@ export default function ActualInputPage() {
           <Send className="w-4 h-4" />
           {submitting ? 'Menyimpan...' : 'Simpan Realisasi Lapangan'}
         </button>
-      </form>
-    </div>
-  );
+        </form>
+      </>
+    )}
+  </div>
+);
 }

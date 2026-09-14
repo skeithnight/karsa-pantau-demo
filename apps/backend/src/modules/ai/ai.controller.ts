@@ -36,9 +36,17 @@ export class AiController {
     return this.semanticSearchService.searchPriceHistory(query || '', orgId);
   }
 
-  @Get('anomalies/:projectId')
   @Post('anomalies/:projectId')
-  async triggerAnomalyDetection(
+  async triggerAnomalyDetectionPost(
+    @Param('projectId') projectId: string,
+    @Query('threshold') threshold?: string,
+  ) {
+    const thresholdNum = threshold ? parseInt(threshold, 10) : 10;
+    return this.anomalyService.detectProjectAnomalies(projectId, thresholdNum);
+  }
+
+  @Get('anomalies/:projectId')
+  async triggerAnomalyDetectionGet(
     @Param('projectId') projectId: string,
     @Query('threshold') threshold?: string,
   ) {
