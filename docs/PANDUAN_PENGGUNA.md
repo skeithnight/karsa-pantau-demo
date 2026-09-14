@@ -2,8 +2,7 @@
 ### Platform Manajemen Anggaran, RAB AHSP & Monitoring Realisasi Proyek Konstruksi (General EPC)
 
 Versi: 1.0 (General Construction & EPC Edition)  
-URL Aplikasi: [https://karsapantau.com](https://karsapantau.com)  
-AI Gateway: [https://ai.karsapantau.com](https://ai.karsapantau.com)
+URL Aplikasi: [https://karsapantau.com](https://karsapantau.com)
 
 ---
 
@@ -23,8 +22,7 @@ AI Gateway: [https://ai.karsapantau.com](https://ai.karsapantau.com)
    - [Supervisor Lapangan / Site Engineer / Mandor](#supervisor-lapangan--site-engineer--mandor)
    - [Project Manager (PM) & Direksi](#project-manager-pm--direksi)
    - [Finance & Accounting](#finance--accounting)
-6. [Panduan Penggunaan Fitur AI (9Router)](#6-panduan-penggunaan-fitur-ai-9router)
-7. [Tanya Jawab & Troubleshooting (FAQ)](#7-tanya-jawab--troubleshooting-faq)
+6. [Tanya Jawab & Troubleshooting (FAQ)](#6-tanya-jawab--troubleshooting-faq)
 
 ---
 
@@ -42,7 +40,7 @@ AI Gateway: [https://ai.karsapantau.com](https://ai.karsapantau.com)
 - **Pencatatan Realisasi Lapangan Cepat**: Mandor atau site engineer dapat menginput belanja langsung dari HP, lengkap dengan nomor nota, vendor, dan foto kuitansi.
 - **Budget Guardrail Otomatis**: Sistem menolak atau memberi peringatan dini seketika jika pengeluaran aktual melebihi sisa pagu anggaran item RAB terkait.
 - **Monitoring Deterministik EVM & Kurva S**: Grafik rencana vs realisasi dan indeks performa (CPI & SPI) terhitung otomatis di backend setiap kali ada transaksi baru.
-- **Lapisan Kecerdasan AI via 9Router**: Mendeteksi anomali biaya, memprediksi proyeksi akhir (EAC), serta menyediakan asisten cerdas untuk tanya jawab proyek.
+- **Fitur Cerdas AI**: Mendeteksi anomali biaya, memprediksi proyeksi akhir (EAC), serta menyediakan asisten cerdas untuk tanya jawab proyek.
 
 ---
 
@@ -216,33 +214,14 @@ Fitur khusus untuk departemen keuangan perusahaan kontraktor:
 
 | Peran Pengguna | Tugas & Tanggung Jawab Utama di Karsa Pantau | Halaman Akses Kunci |
 |---|---|---|
-| **Estimator / Tender Engineer** | - Memetakan item BOQ dari Owner ke dalam WBS.<br>- Memasukkan koefisien analisa harga satuan (AHSP).<br>- Menggunakan Semantic Search AI untuk cek histori harga.<br>- Mengajukan draft RAB ke PM. | `/projects/[id]/rab/new`<br>`/api/v1/ai/semantic-search` |
+| **Estimator / Tender Engineer** | - Memetakan item BOQ dari Owner ke dalam WBS.<br>- Memasukkan koefisien analisa harga satuan (AHSP).<br>- Menggunakan Pencarian Cerdas AI untuk cek histori harga.<br>- Mengajukan draft RAB ke PM. | `/projects/[id]/rab/new` |
 | **Supervisor Lapangan / Mandor** | - Mencatat pembelian material lokal atau sewa alat.<br>- Mencatat upah harian pekerja proyek.<br>- Mengunggah foto nota/bon belanja.<br>- Bekerja dalam mode offline saat di lokasi minim sinyal. | `/projects/[id]/actual/new` |
 | **Project Manager (PM)** | - Memeriksa dan menyetujui draft RAB.<br>- Memantau pergerakan grafik Kurva S tiap minggu.<br>- Membaca rekomendasi mitigasi pada kartu anomali biaya AI.<br>- Memastikan indeks CPI & SPI tetap berada di atas 1.0. | `/projects/[id]`<br>`/approvals` |
 | **Finance & Akuntansi** | - Memverifikasi nota belanja terhadap rekening koran proyek.<br>- Memastikan tidak ada pengeluaran tanpa pos RAB.<br>- Mengunduh rekapan transaksi bulanan untuk pelaporan pajak & laporan laba rugi proyek. | `/projects/[id]`<br>`/pricing` (Portal Keuangan) |
 
 ---
 
-## 6. Panduan Penggunaan Fitur AI (9Router)
-
-Karsa Pantau terintegrasi dengan **9Router AI Gateway** (`https://ai.karsapantau.com`) yang menghubungkan model kecerdasan buatan terdepan dengan keamanan tingkat industri.
-
-### Aturan Emas Integrasi AI:
-1. **Kalkulasi Finansial Selalu Deterministik**: AI tidak pernah menghitung saldo kas atau rumus EVM secara mandiri. Semua rumus matematis dihitung 100% oleh backend NestJS. AI bertugas menyusun **narasi wawasan bisnis, diagnosis masalah, dan saran mitigasi**.
-2. **Audit Trail Lengkap**: Semua rekomendasi, peringatan anomali, dan hasil analisis AI tersimpan di tabel database `ai_insights` untuk kebutuhan audit formal.
-3. **Fallback Cerdas**: Jika koneksi AI sedang lambat atau offline, aplikasi tetap berfungsi normal dengan pencarian teks standar tanpa menghambat operasional lapangan.
-
-### Fitur AI yang Tersedia:
-- **Pencarian Semantik Harga (Semantic Search)**:
-  - Cari riwayat harga pengadaan lampau menggunakan bahasa alami (contoh: *"kabel tegangan menengah tahan air"*). Sistem pgvector akan mencocokkan kemiripan vektor dan menampilkan referensi harga terbaik.
-- **Deteksi Anomali Biaya Otomatis**:
-  - Sistem memeriksa item yang mengalami deviasi biaya di atas ambang batas (default 10%) dan merangkum akar masalahnya ke dalam dashboard.
-- **Chat Asisten Proyek (Streaming RAG via SSE)**:
-  - Tanyakan kondisi proyek secara langsung, misalnya: *"Berapa perkiraan biaya akhir (EAC) proyek ini jika tren CPI sekarang berlanjut?"*
-
----
-
-## 7. Tanya Jawab & Troubleshooting (FAQ)
+## 6. Tanya Jawab & Troubleshooting (FAQ)
 
 ### Q1: Mengapa saya tidak bisa menginput realisasi lapangan pada proyek baru?
 > **Jawaban**: Pastikan RAB proyek telah diajukan dan disetujui (`status: approved`). Sesuai tata kelola finansial konstruksi, dilarang mengeluarkan biaya pada proyek yang belum memiliki pagu anggaran sah.
@@ -254,7 +233,7 @@ Karsa Pantau terintegrasi dengan **9Router AI Gateway** (`https://ai.karsapantau
 > **Jawaban**: Aplikasi akan tetap menerima input data Anda dan menyimpannya di memori lokal perangkat. Begitu perangkat terhubung kembali ke jaringan internet, antrean data akan tersinkronisasi otomatis ke server.
 
 ### Q4: Apakah data proyek kami aman dan tidak digunakan untuk melatih model AI publik?
-> **Jawaban**: Sangat aman. Semua lalu lintas AI dikontrol melalui gateway privat 9Router kami sendiri (`ai.karsapantau.com`) dengan kunci enkripsi aman. Data proyek Anda tidak pernah dibagikan ke pihak ketiga untuk pelatihan model publik.
+> **Jawaban**: Sangat aman. Seluruh pemrosesan AI menggunakan koneksi privat dan terenkripsi. Data dan informasi sensitif proyek Anda dijaga kerahasiaannya dan tidak pernah dibagikan ke pihak ketiga atau digunakan untuk melatih model kecerdasan buatan publik.
 
 ---
 *Dokumen ini merupakan bagian dari repositori resmi Karsa Pantau. Untuk pertanyaan teknis lebih lanjut, hubungi tim pengembang.*

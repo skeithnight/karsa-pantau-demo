@@ -89,7 +89,7 @@ export default function ProjectDashboardPage() {
       setAiInsight({
         type: 'anomaly',
         title: 'Audit Anomali AI',
-        text: `Pemeriksaan anomali via 9Router: ${err.message || 'Server timeout'}`,
+        text: `Pemeriksaan anomali via AI: ${err.message || 'Server timeout'}`,
         timestamp: new Date().toLocaleTimeString('id-ID'),
       });
     } finally {
@@ -111,7 +111,7 @@ export default function ProjectDashboardPage() {
       setAiInsight({
         type: 'forecast',
         title: 'Analisis Proyeksi EVM & Forecast EAC',
-        text: `Kalkulasi forecast EVM via 9Router: ${err.message || 'Server timeout'}`,
+        text: `Kalkulasi forecast EVM via AI: ${err.message || 'Server timeout'}`,
         timestamp: new Date().toLocaleTimeString('id-ID'),
       });
     } finally {
@@ -304,7 +304,7 @@ export default function ProjectDashboardPage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white">AI Cost & Risk Copilot</h2>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800 font-mono">
-                  9Router • Claude 3.5 Sonnet
+                  Fitur Cerdas AI
                 </span>
               </div>
               <p className="text-xs text-slate-400">

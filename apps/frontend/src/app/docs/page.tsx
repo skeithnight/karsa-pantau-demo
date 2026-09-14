@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function DocumentationPage() {
-  const [activeTab, setActiveTab] = useState<'quickstart' | 'estimator' | 'field' | 'pm' | 'finance' | 'ai' | 'faq'>(
+  const [activeTab, setActiveTab] = useState<'quickstart' | 'estimator' | 'field' | 'pm' | 'finance' | 'faq'>(
     'quickstart',
   );
 
@@ -36,8 +36,7 @@ export default function DocumentationPage() {
     { id: 'field', label: '3. Mandor & Supervisor (Realisasi)', icon: PlusCircle },
     { id: 'pm', label: '4. Project Manager (EVM & Kurva S)', icon: Activity },
     { id: 'finance', label: '5. Portal Keuangan & Ekspor', icon: DollarSign },
-    { id: 'ai', label: '6. Lapisan AI (9Router & RAG)', icon: Sparkles },
-    { id: 'faq', label: '7. Tanya Jawab (FAQ)', icon: HelpCircle },
+    { id: 'faq', label: '6. Tanya Jawab (FAQ)', icon: HelpCircle },
   ];
 
   return (
@@ -53,7 +52,7 @@ export default function DocumentationPage() {
             Pusat Panduan & Dokumentasi Pengguna
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Panduan komprehensif penggunaan fitur budgeting, pengawasan realisasi lapangan, formula EVM, dan AI assist.
+            Panduan komprehensif penggunaan fitur budgeting, pengawasan realisasi lapangan, formula EVM, dan asisten AI.
           </p>
         </div>
 
@@ -65,15 +64,6 @@ export default function DocumentationPage() {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Uji Coba Langsung di Demo</span>
           </Link>
-          <a
-            href="https://ai.karsapantau.com"
-            target="_blank"
-            rel="noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-all"
-          >
-            <span>9Router Gateway</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
         </div>
       </div>
 
@@ -149,7 +139,7 @@ export default function DocumentationPage() {
                       <strong>Langkah 3: Coba Input Belanja Lapangan</strong> — Klik tombol <em>"Input Realisasi Lapangan"</em> untuk mensimulasikan pencatatan belanja mandor dan uji kerja <em>Budget Guardrail</em>.
                     </li>
                     <li className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <strong>Langkah 4: Eksplorasi AI Copilot</strong> — Klik tombol <em>"AI Copilot Proyek"</em> di pojok kanan bawah untuk mengajukan pertanyaan kontekstual ke asisten cerdas 9Router.
+                      <strong>Langkah 4: Eksplorasi AI Copilot</strong> — Klik tombol <em>"AI Copilot Proyek"</em> di pojok kanan bawah untuk mengajukan pertanyaan kontekstual ke asisten cerdas AI.
                     </li>
                   </ol>
                 </div>
@@ -197,7 +187,7 @@ export default function DocumentationPage() {
 
                   <h3 className="text-base font-bold text-white">3. Menggunakan Pencarian Cerdas AHSP AI</h3>
                   <p className="text-xs text-slate-300">
-                    Pada formulir RAB Builder, ketik nama pekerjaan umum di bilah pencarian AI (misal: <em>"bore pile d60cm"</em>). Sistem 9Router dengan pgvector akan mencocokkan kemiripan vektor dengan database harga historis dan merekomendasikan harga satuan serta satuan pengukuran. Klik <strong>"+ Terapkan ke Form RAB"</strong> untuk mengisi formulir seketika.
+                    Pada formulir RAB Builder, ketik nama pekerjaan umum di bilah pencarian AI (misal: <em>"bore pile d60cm"</em>). Fitur pencarian AI cerdas akan mencocokkan kemiripan dengan database harga historis dan merekomendasikan harga satuan serta satuan pengukuran. Klik <strong>"+ Terapkan ke Form RAB"</strong> untuk mengisi formulir seketika.
                   </p>
                 </div>
               </div>
@@ -281,7 +271,7 @@ export default function DocumentationPage() {
 
                   <h3 className="text-base font-bold text-white mt-4">Audit Anomali Biaya AI:</h3>
                   <p className="text-slate-300">
-                    Klik tombol <strong>"Jalankan Audit Anomali"</strong> pada panel AI Copilot. Sistem backend NestJS menghitung deviasi per item, lalu Claude 3.5 Sonnet melalui 9Router menyusun rekomendasi mitigasi risiko finansial secara otomatis.
+                    Klik tombol <strong>"Jalankan Audit Anomali"</strong> pada panel AI Copilot. Sistem cerdas AI mendeteksi deviasi per item dan menyusun rekomendasi mitigasi risiko finansial secara otomatis.
                   </p>
                 </div>
               </div>
@@ -323,50 +313,7 @@ export default function DocumentationPage() {
               </div>
             )}
 
-            {/* TAB 6: AI ARCHITECTURE */}
-            {activeTab === 'ai' && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-sky-400" />
-                    Arsitektur AI: 9Router, pgvector & Prinsip Determinisme
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Bagaimana kecerdasan buatan diintegrasikan secara aman dan bertanggung jawab.
-                  </p>
-                </div>
-
-                <div className="space-y-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-800/40 space-y-2">
-                    <span className="font-bold text-indigo-300 flex items-center gap-1.5">
-                      <Cpu className="w-4 h-4 text-indigo-400" />
-                      Prinsip Emas Determinisme Finansial:
-                    </span>
-                    <p className="text-slate-300">
-                      Model AI tidak pernah menghitung uang, total subtotal, atau indeks EVM secara mandiri. Seluruh perhitungan matematis dilakukan 100% secara deterministik oleh backend NestJS. Model bahasa (Claude 3.5 Sonnet) hanya menyusun narasi analisis wawasan bisnis dan rekomendasi mitigasi.
-                    </p>
-                  </div>
-
-                  <h3 className="text-base font-bold text-white">Komponen Lapisan AI:</h3>
-                  <ul className="space-y-2.5 list-disc list-inside text-slate-300">
-                    <li>
-                      <strong>9Router AI Gateway</strong> (<code className="text-sky-400 font-mono">ai.karsapantau.com</code>): Titik tunggal kontrol kredensial API, kuota token, failover, dan audit logging.
-                    </li>
-                    <li>
-                      <strong>PostgreSQL 16 + pgvector</strong>: Menyimpan 1536-dimensional embedding untuk pencarian semantik harga historis dengan index HNSW berkecepatan tinggi.
-                    </li>
-                    <li>
-                      <strong>Server-Sent Events (SSE)</strong>: Mengalirkan respons streaming token per token pada widget asisten proyek secara real-time.
-                    </li>
-                    <li>
-                      <strong>Tabel Audit Trail (`ai_insights`)</strong>: Setiap analisis anomali, forecast, dan insight tersimpan permanen di database untuk keperluan audit formal perusahaan.
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 7: FAQ */}
+            {/* TAB 6: FAQ */}
             {activeTab === 'faq' && (
               <div className="space-y-6">
                 <div>

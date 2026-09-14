@@ -205,7 +205,7 @@ export default function RabBuilderPage() {
               <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
                 <span>Pencarian Cerdas Analisa Harga Satuan (AHSP) AI</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 font-mono">
-                  9Router pgvector
+                  Pencarian Cerdas AI
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400">

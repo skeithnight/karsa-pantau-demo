@@ -92,8 +92,8 @@ Prinsip Penting:
         yield chunk;
       }
     } catch (err: any) {
-      this.logger.warn(`Streaming 9Router gagal, fallback respons: ${err.message}`);
-      const fallbackText = `[Mode Offline] Maaf, koneksi ke gateway AI (9Router) sedang tidak dapat dijangkau. Berdasarkan data lokal sistem, proyek memiliki Total Anggaran Rp ${projectContext ? 'yang tercatat di dashboard' : '-'} dengan realisasi berjalan.`;
+      this.logger.warn(`Streaming AI gagal, fallback respons: ${err.message}`);
+      const fallbackText = `[Mode Offline] Maaf, layanan asisten AI sedang tidak dapat dijangkau saat ini. Berdasarkan data lokal sistem, proyek memiliki Total Anggaran Rp ${projectContext ? 'yang tercatat di dashboard' : '-'} dengan realisasi berjalan.`;
       fullResponse = fallbackText;
       yield fallbackText;
     }

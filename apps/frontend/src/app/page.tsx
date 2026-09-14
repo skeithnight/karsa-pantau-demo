@@ -134,7 +134,7 @@ export default function LandingPage() {
 
           <p className="max-w-3xl mx-auto text-base sm:text-lg text-slate-400 leading-relaxed font-normal">
             Tinggalkan spreadsheet manual yang rentan bocor dan formula rusak. Karsa Pantau mengintegrasikan penyusunan 
-            RAB standar AHSP, otomatisasi Kurva S & EVM, serta lapisan AI cerdas untuk mem-parse dokumen BOQ tender, 
+            RAB standar AHSP, otomatisasi Kurva S & EVM, serta teknologi AI cerdas untuk mem-parse dokumen BOQ tender, 
             mengontrol kas keluar, dan melayani kebutuhan pelaporan tim Finance.
           </p>
 

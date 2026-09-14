@@ -21,7 +21,7 @@ export function AiChatWidget({ projectId, projectName = 'Proyek Ini' }: AiChatWi
     {
       id: 'init-1',
       role: 'assistant',
-      content: `Halo! Saya Asisten AI Karsa Pantau (didukung 9Router & Claude). Saya siap membantu Anda menganalisis anggaran, progres Kurva S, indeks EVM (CPI/SPI), dan deteksi anomali biaya untuk ${projectName}. Ada yang bisa saya bantu?`,
+      content: `Halo! Saya Asisten AI Karsa Pantau. Saya siap membantu Anda menganalisis anggaran, progres Kurva S, indeks EVM (CPI/SPI), dan deteksi anomali biaya untuk ${projectName}. Ada yang bisa saya bantu?`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -129,7 +129,7 @@ export function AiChatWidget({ projectId, projectName = 'Proyek Ini' }: AiChatWi
             ? {
                 ...msg,
                 content:
-                  'Maaf, terjadi gangguan saat menghubungi 9Router AI Gateway. Mohon pastikan koneksi internet stabil atau coba beberapa saat lagi.',
+                  'Maaf, terjadi gangguan saat menghubungi server AI. Mohon pastikan koneksi internet stabil atau coba beberapa saat lagi.',
               }
             : msg,
         ),
@@ -166,9 +166,6 @@ export function AiChatWidget({ projectId, projectName = 'Proyek Ini' }: AiChatWi
             </span>
           </div>
           <span className="hidden sm:inline">AI Copilot Proyek</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-slate-950/60 text-[10px] text-amber-300 font-mono border border-amber-500/40">
-            9Router
-          </span>
         </button>
       </div>
 
@@ -293,7 +290,7 @@ export function AiChatWidget({ projectId, projectName = 'Proyek Ini' }: AiChatWi
               </button>
             </form>
             <div className="flex items-center justify-between text-[9px] text-slate-500 mt-2 px-1">
-              <span>Model: Claude 3.5 Sonnet via 9Router</span>
+              <span>Didukung Kecerdasan Buatan (AI)</span>
               <span>Kalkulasi finansial terverifikasi deterministik</span>
             </div>
           </div>

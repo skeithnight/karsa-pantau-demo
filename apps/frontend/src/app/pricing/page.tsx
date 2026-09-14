@@ -80,7 +80,7 @@ export default function PricingPage() {
       badge: 'Skala Korporat',
       features: [
         'Unlimited Proyek & Anggota Tim',
-        'Dedicated Throughput AI (9Router)',
+        'Dedicated Throughput AI Enterprise',
         'Kustom Master AHSP Perusahaan',
         'Opsi On-Premise / Private Cloud',
         'SLA 99.9% & Dedicated Account Manager',
