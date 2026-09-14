@@ -22,142 +22,88 @@ import {
   TrendingDown,
   Building2,
   DollarSign,
-  Users,
+  PlayCircle,
   Camera,
-  MapPin,
   Calendar,
   Wallet,
-  Play,
-  FileText,
-  Clock,
-  ShieldAlert,
-  Bot,
   GitCompare,
+  ArrowRight,
+  Check,
+  UserCheck,
+  Building,
   HardHat,
+  Briefcase,
+  Eye,
 } from 'lucide-react';
 
-type RoleTab = 'onboarding' | 'estimator' | 'supervisor' | 'pm' | 'finance' | 'approver' | 'admin' | 'faq';
-
 export default function DocumentationPage() {
-  const [activeTab, setActiveTab] = useState<RoleTab>('onboarding');
+  const [activeTab, setActiveTab] = useState<
+    'video' | 'estimator' | 'field' | 'pm' | 'finance' | 'owner' | 'faq'
+  >('video');
 
-  const roleNavItems = [
-    {
-      id: 'onboarding',
-      label: '1. Onboarding & Video E2E',
-      roleBadge: 'Semua Pengguna',
-      icon: Play,
-      color: 'text-amber-400',
-    },
-    {
-      id: 'estimator',
-      label: '2. Estimator & QS',
-      roleBadge: 'Estimator / QS',
-      icon: Calculator,
-      color: 'text-sky-400',
-    },
-    {
-      id: 'supervisor',
-      label: '3. Site Supervisor & Mandor',
-      roleBadge: 'Supervisor / Mandor',
-      icon: HardHat,
-      color: 'text-emerald-400',
-    },
-    {
-      id: 'pm',
-      label: '4. Project Manager (PM)',
-      roleBadge: 'Project Manager',
-      icon: Activity,
-      color: 'text-purple-400',
-    },
-    {
-      id: 'finance',
-      label: '5. Finance & Purchasing',
-      roleBadge: 'Finance / AP',
-      icon: DollarSign,
-      color: 'text-amber-400',
-    },
-    {
-      id: 'approver',
-      label: '6. Approver & Owner / Direksi',
-      roleBadge: 'Owner / Direksi',
-      icon: ShieldCheck,
-      color: 'text-rose-400',
-    },
-    {
-      id: 'admin',
-      label: '7. Administrator Perusahaan',
-      roleBadge: 'Admin / Subscriber',
-      icon: Users,
-      color: 'text-blue-400',
-    },
-    {
-      id: 'faq',
-      label: '8. Tanya Jawab (FAQ) & SOP',
-      roleBadge: 'Panduan Praktis',
-      icon: HelpCircle,
-      color: 'text-slate-400',
-    },
+  const navItems = [
+    { id: 'video', label: '1. Video Tutorial & Alur Lengkap', icon: PlayCircle, badge: 'Video E2E' },
+    { id: 'estimator', label: '2. Estimator (RAB, BOQ & Harga)', icon: Calculator, badge: 'Tender' },
+    { id: 'field', label: '3. Mandor / Supervisor (Lapangan)', icon: HardHat, badge: 'Field Ops' },
+    { id: 'pm', label: '4. Project Manager (EVM & Approval)', icon: Briefcase, badge: 'Control' },
+    { id: 'finance', label: '5. Keuangan & Pengadaan (Finance)', icon: DollarSign, badge: 'Finance' },
+    { id: 'owner', label: '6. Owner & Direksi (Approver)', icon: ShieldCheck, badge: 'Audit' },
+    { id: 'faq', label: '7. Tanya Jawab (FAQ & Troubleshooting)', icon: HelpCircle, badge: 'Bantuan' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 text-slate-100 selection:bg-sky-500 selection:text-white">
-      {/* Header Banner */}
+    <div className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 selection:bg-sky-500 selection:text-white">
+      {/* Header */}
       <div className="border-b border-slate-800 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/80 text-xs font-semibold text-sky-400 mb-2">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Pusat Tutorial & Dokumentasi Peran Operasional EPC v2.0</span>
+            <span>Dokumentasi Resmi Karsa Pantau — Panduan Pengguna Berbasis Peran</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Panduan Komprehensif Berdasarkan Peran Kerja (Role-Based)
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            Pusat Panduan & Tutorial Penggunaan
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-            Tutorial langkah-demi-langkah dilengkapi rekaman video interaktif, tangkapan layar antarmuka asli, dan SOP operasional kontraktor lapangan hingga level direksi.
+          <p className="text-sm text-slate-400 mt-1">
+            Panduan komprehensif langkah demi langkah, dilengkapi tangkapan layar, pemutar video alur lengkap, dan instruksi spesifik untuk setiap divisi kerja kontraktor.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2.5">
           <Link
             href="/demo"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-sky-500/20 hover:opacity-90 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Buka Simulasi Demo Langsung</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Buka Simulasi Demo Live</span>
           </Link>
         </div>
       </div>
 
-      {/* Main Grid: Sidebar Role Selector + Content Area */}
+      {/* Main Grid: Sidebar Tabs + Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Nav */}
-        <div className="lg:col-span-1 space-y-2">
-          <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5 sticky top-24 shadow-xl">
-            <p className="text-[10px] uppercase font-bold text-slate-400 px-3 py-1 tracking-wider">
-              Pilih Peran Kerja (Role)
+        <div className="lg:col-span-1 space-y-1.5">
+          <div className="p-2 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 sticky top-24 shadow-xl">
+            <p className="text-[10px] uppercase font-bold text-slate-500 px-3 py-2 tracking-wider">
+              Pilih Panduan Berdasarkan Peran
             </p>
-            {roleNavItems.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               return (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(item.id as RoleTab)}
-                  className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/20'
-                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                      ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.color}`} />
-                    <div>
-                      <div className="font-semibold">{item.label}</div>
-                      <div className={`text-[10px] font-mono ${isActive ? 'text-sky-200' : 'text-slate-500'}`}>
-                        {item.roleBadge}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2.5 truncate">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="truncate">{item.label}</span>
                   </div>
                   {isActive && <ChevronRight className="w-3.5 h-3.5 text-white shrink-0" />}
                 </button>
@@ -166,88 +112,95 @@ export default function DocumentationPage() {
           </div>
         </div>
 
-        {/* Content Details Area */}
+        {/* Content Area */}
         <div className="lg:col-span-3">
-          <div className="rounded-3xl p-6 sm:p-8 bg-slate-900/60 border border-slate-800 space-y-8 text-sm leading-relaxed text-slate-300 shadow-2xl">
-
-            {/* TAB 1: ONBOARDING & VIDEO E2E */}
-            {activeTab === 'onboarding' && (
+          <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-8 text-sm leading-relaxed text-slate-300">
+            {/* ========================================================= */}
+            {/* TAB 1: VIDEO TUTORIAL & ALUR LENGKAP */}
+            {/* ========================================================= */}
+            {activeTab === 'video' && (
               <div className="space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono font-semibold mb-2">
-                    Langkah Awal & Rekaman Alur
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <PlayCircle className="w-6 h-6 text-sky-400" />
+                      Video Rekaman Panduan Operasional End-to-End
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 text-[10px] font-mono">
+                      Durasi: ~2 Menit
+                    </span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <Play className="w-6 h-6 text-amber-400" />
-                    Video Tutorial End-to-End & Alur Onboarding Cepat
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Tonton video alur kerja interaktif Karsa Pantau dari login, navigasi dashboard, simulasi input belanja lapangan, hingga evaluasi Kurva S.
+                  <p className="text-xs text-slate-400 mt-1">
+                    Tonton alur lengkap simulasi mulai dari penyusunan RAB, impor BOQ Excel, input kasbon lapangan, pelacakan cuaca harian, hingga audit anomali biaya.
                   </p>
                 </div>
 
                 {/* Video Player Card */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3 sm:p-4 space-y-3 shadow-2xl">
-                  <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-                    <span className="font-mono flex items-center gap-1.5 text-slate-300 font-semibold">
-                      <Play className="w-3.5 h-3.5 text-amber-400" /> Rekaman Demonstrasi Alur Pengguna (E2E Flow)
+                <div className="rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-2xl space-y-2">
+                  <div className="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
+                    <span className="font-semibold text-white flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Rekaman Simulasi Alur Sistem Karsa Pantau (EPC Edition)
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px]">
-                      Format: MP4 (Full HD)
-                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">MP4 Full HD</span>
                   </div>
-
-                  <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-800 relative">
+                  <div className="p-2 sm:p-4">
                     <video
                       controls
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      className="w-full h-full object-cover"
-                      src="/docs/karsa_e2e_flow.mp4"
+                      autoPlay={false}
+                      preload="metadata"
+                      poster="/docs/project_dashboard.png"
+                      className="w-full rounded-xl border border-slate-800 shadow-lg aspect-video bg-black"
                     >
-                      Browser Anda tidak mendukung tag video. Silakan unduh video panduan langsung.
+                      <source src="/docs/karsa_e2e_flow.mp4" type="video/mp4" />
+                      Peramban Anda tidak mendukung pemutar video HTML5. Silakan unduh video panduan langsung.
                     </video>
                   </div>
-                  <p className="text-[11px] text-slate-400 text-center italic">
-                    Video di atas merekam alur otentikasi peran, penjelajahan modul RAB, verifikasi approval, dan audit anomali biaya secara otomatis.
-                  </p>
                 </div>
 
-                {/* 4 Tahap Siklus Proyek EPC */}
-                <div className="space-y-3 pt-2">
-                  <h3 className="text-base font-bold text-white">4 Siklus Hidup Proyek dalam Karsa Pantau:</h3>
+                {/* Timeline / Chapter Guide */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider text-[11px]">
+                    Daftar Babak Alur Proyek dalam Video:
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                      <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">1</div>
-                      <h4 className="font-bold text-white">Fase Tender & Penyusunan RAB</h4>
-                      <p className="text-slate-400 leading-relaxed">
-                        Estimator mengunggah Excel BOQ atau menyusun item pekerjaan berbasis katalog AHSP, dilindungi oleh Historical Price Guardrail.
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between text-sky-400 font-bold">
+                        <span>00:00 &bull; Onboarding & Login Cepat</span>
+                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">Tahap 1</span>
+                      </div>
+                      <p className="text-slate-400">
+                        Memilih role kerja (Estimator, Mandor, PM, Finance) dan navigasi portofolio proyek konstruksi aktif.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">2</div>
-                      <h4 className="font-bold text-white">Otorisasi & Baseline Locking</h4>
-                      <p className="text-slate-400 leading-relaxed">
-                        Approver/Owner menandatangani RAB v1.0. Sistem mengunci baseline kontrak; pengeluaran riil hanya boleh diinput setelah status <em>Approved</em>.
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between text-amber-400 font-bold">
+                        <span>00:30 &bull; RAB Builder & BOQ Excel</span>
+                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">Tahap 2</span>
+                      </div>
+                      <p className="text-slate-400">
+                        Unggah berkas BOQ Excel, verifikasi persentase keyakinan mapping kolom, dan aktivasi price guardrail.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">3</div>
-                      <h4 className="font-bold text-white">Eksekusi Lapangan (Field Ops)</h4>
-                      <p className="text-slate-400 leading-relaxed">
-                        Mandor/Supervisor mencatat Laporan Harian Cuaca, absensi pekerja, foto progres ber-GPS, serta kas kecil (Petty Cash).
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between text-emerald-400 font-bold">
+                        <span>01:05 &bull; Realisasi Lapangan Ber-GPS</span>
+                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">Tahap 3</span>
+                      </div>
+                      <p className="text-slate-400">
+                        Input nota kuitansi mandor dengan foto kamera dan watermark stempel koordinat GPS anti-rekayasa.
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                      <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">4</div>
-                      <h4 className="font-bold text-white">Evaluasi EVM & Jurnal Keuangan</h4>
-                      <p className="text-slate-400 leading-relaxed">
-                        Project Manager memantau Kurva S, CPI/SPI, dan anomali biaya. Tim finance mengekspor jurnal transaksi untuk Accurate/SAP.
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between text-purple-400 font-bold">
+                        <span>01:40 &bull; Monitoring EVM & Kurva S</span>
+                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">Tahap 4</span>
+                      </div>
+                      <p className="text-slate-400">
+                        Evaluasi indeks performa CPI/SPI mingguan, audit anomali biaya AI, dan ekspor ringkasan eksekutif.
                       </p>
                     </div>
                   </div>
@@ -255,452 +208,503 @@ export default function DocumentationPage() {
               </div>
             )}
 
-            {/* TAB 2: ESTIMATOR & QS */}
+            {/* ========================================================= */}
+            {/* TAB 2: ESTIMATOR & TENDER ENGINEER */}
+            {/* ========================================================= */}
             {activeTab === 'estimator' && (
-              <div className="space-y-6">
+              <div className="space-y-7">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Estimator & Quantity Surveyor (QS)
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 text-[10px] font-bold uppercase mb-1.5">
+                    Modul Peran Estimator / QS / Tender Engineer
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Calculator className="w-6 h-6 text-sky-400" />
-                    Panduan Penyusunan RAB, Smart BOQ Parser, & Price Guardrail
+                    Penyusunan RAB, Smart BOQ Parser & Price Intelligence
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Pelajari cara mengimpor ribuan baris BOQ dari Excel tender, memanfaatkan kecerdasan pembanding harga historis, dan membandingkan versi adendum RAB (CCO).
+                  <p className="text-xs text-slate-400 mt-1">
+                    Pelajari cara menyusun anggaran biaya proyek, mengimpor berkas Excel tender secara instan, dan memanfaatkan guardrail harga historis.
                   </p>
                 </div>
 
-                {/* Feature 1: Explainable BOQ Parser */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <FileSpreadsheet className="w-4 h-4 text-sky-400" />
-                    1. Impor BOQ Excel & Human-in-the-Loop Mapping
+                {/* Feature 1: Smart BOQ Parser */}
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center font-mono">1</span>
+                    Impor BOQ Tender Excel dengan Verifikasi Kolom (Human-in-the-Loop)
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Kontraktor sering menerima format BOQ yang tidak seragam dari konsultan tender. Karsa Pantau menyediakan <strong>Explainable AI BOQ Parser</strong> yang memberikan transparansi skor keyakinan per kolom (*Contoh: 98% Sesuai*), pratinjau 3 baris data nyata, dan tombol penguncian kolom sebelum data dimasukkan ke RAB.
+                    Tidak perlu lagi menyalin ribuan baris item pekerjaan satu per satu. Unggah berkas spreadsheet tender (.xlsx, .xls, atau .csv) yang diberikan oleh Owner atau Konsultan Perencana.
                   </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
+                  
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
                     <img
                       src="/docs/boq_excel.png"
-                      alt="Modal Verifikasi Mapping BOQ Excel"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
+                      alt="Smart BOQ Parser Modal"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
                     />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 1: Modal verifikasi pemetaan kolom BOQ dengan indikator akurasi kecocokan dan pratinjau sampel 3 baris riil.
+                    </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-                    <span className="font-bold text-sky-400">💡 Langkah Praktis Estimator:</span>
-                    <ol className="list-decimal list-inside space-y-1 text-slate-400">
-                      <li>Buka formulir <strong>RAB Builder</strong> di <code>/projects/[id]/rab/new</code>.</li>
-                      <li>Klik <strong>"Upload Excel BOQ"</strong> dan pilih berkas tender <code>.xlsx</code> atau <code>.csv</code>.</li>
-                      <li>Periksa dropdown pemetaan: WBS, Deskripsi Pekerjaan, Volume, Satuan, dan Harga Satuan.</li>
-                      <li>Klik <strong>"Konfirmasi & Kunci Mapping BOQ"</strong> untuk menghitung subtotal otomatis.</li>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+                    <span className="font-bold text-white block">Langkah Pelaksanaan Estimator:</span>
+                    <ol className="list-decimal list-inside space-y-1.5 text-slate-300">
+                      <li>Buka halaman proyek dan klik tombol <strong>"Buka RAB Builder"</strong>.</li>
+                      <li>Klik tombol <strong>"+ Upload BOQ Excel"</strong> di pojok kanan atas.</li>
+                      <li>Pilih berkas Excel tender dari komputer Anda (atau unduh format template jika menyusun dari awal).</li>
+                      <li>Sistem otomatis mendeteksi kolom: WBS, Deskripsi Pekerjaan, Volume, Satuan, dan Harga Satuan dengan skor kecocokan (misal: <em>98% Sesuai</em>).</li>
+                      <li>Periksa pratinjau 3 baris sampel. Jika kolom sudah tepat, klik <strong>"Konfirmasi & Kunci Mapping BOQ"</strong>. Seluruh baris langsung masuk ke draft RAB Anda!</li>
                     </ol>
                   </div>
                 </div>
 
                 {/* Feature 2: Historical Price Guardrail */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-400" />
-                    2. Historical Price Intelligence Guardrail
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center font-mono">2</span>
+                    Historical Price Guardrail (Pencegah Typo & Mark-up Ekstrem)
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Mencegah kesalahan ketik (*typo nol*) atau mark-up tidak wajar yang lolos saat masa tender. Sistem secara otomatis membandingkan harga satuan yang Anda ketik dengan nilai <strong>median</strong> dari proyek sejenis. Jika deviasi melebihi 25%, kartu peringatan merah akan muncul seketika beserta kolom wajib <strong>Catatan Justifikasi Audit</strong>.
+                    Saat memasukkan harga satuan baru, sistem secara otomatis membandingkannya dengan <strong>nilai median harga historis</strong> dari katalog AHSP dan proyek-proyek yang pernah dibangun sebelumnya.
                   </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
                     <img
                       src="/docs/price_guardrail.png"
-                      alt="Historical Price Guardrail Alert"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
+                      alt="Price Guardrail Alert"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
                     />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 2: Kartu peringatan inline deviasi harga ekstrem (&gt;25% di atas median) dan kolom wajib justifikasi audit.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/40 text-xs space-y-1 text-slate-300">
+                    <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4" /> Aturan Kepatuhan Tender:
+                    </span>
+                    <p>
+                      Jika harga satuan yang Anda ketik menyimpang lebih dari 25% dari median pasar, Anda diwajibkan mengisi <strong>Catatan Justifikasi Deviasi</strong> (contoh: <em>lokasi proyek di pulau terpencil membutuhkan biaya angkut kapal tongkang</em>). Hal ini menjaga kontraktor dari sengketa audit internal di kemudian hari.
+                    </p>
                   </div>
                 </div>
 
-                {/* Feature 3: Git-like RAB Versioning & Delta Diff */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <GitCompare className="w-4 h-4 text-emerald-400" />
-                    3. Git-like RAB Versioning & Delta Diff Engine
+                {/* Feature 3: Git-like RAB Versioning */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center font-mono">3</span>
+                    Git-like Versioning & Visual Delta Diff Engine (Lacak CCO Owner)
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Saat Owner menerbitkan revisi desain atau <em>Contract Change Order</em> (CCO), Anda tidak perlu lagi membandingkan dua file Excel secara manual. Buka halaman <code>/projects/[id]/rab/diff</code> untuk melihat penyorotan warna visual:
+                    Ketika Owner merevisi volume pekerjaan atau menerbitkan <em>Contract Change Order (CCO)</em>, Anda tidak perlu lagi membuat berkas file bertumpuk seperti <code className="text-amber-400 font-mono">RAB_Final_v2_revisi3_fix.xlsx</code>.
                   </p>
-                  <ul className="text-xs space-y-1 list-disc list-inside text-slate-400">
-                    <li><strong className="text-emerald-400">🟢 Hijau (Baru)</strong>: Item pekerjaan scope baru yang ditambahkan pada adendum.</li>
-                    <li><strong className="text-amber-400">🟡 Kuning (Revisi)</strong>: Item yang mengalami perubahan volume atau harga satuan, lengkap dengan nilai selisih (*Net Delta*).</li>
-                    <li><strong className="text-rose-400">🔴 Merah (Dihapus)</strong>: Item yang dibatalkan oleh Owner.</li>
-                  </ul>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
                     <img
                       src="/docs/rab_diff.png"
-                      alt="Git-like RAB Diff Table"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
+                      alt="Git-like RAB Diff Engine"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
                     />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 3: Tampilan visual diff baris-per-baris dengan penyorotan warna (🟢 Hijau = Scope Baru, 🟡 Kuning = Kuantitas/Harga Berubah, 🔴 Merah = Scope Dihapus).
+                    </p>
                   </div>
-                </div>
 
-                {/* Feature 4: Vendor Catalog */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-purple-400" />
-                    4. Master Perpustakaan Harga Vendor & Riwayat RAB
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Estimator dapat mengakses menu <code>/catalog</code> untuk melihat basis data harga upah harian lokal, bahan material supplier, sewa alat berat, dan penawaran subkontraktor yang siap diimpor massal via Excel.
+                  <p className="text-xs text-slate-300">
+                    Buka halaman <strong>/projects/[id]/rab/diff</strong> untuk membandingkan versi tender v1.0 dengan versi revisi v1.1. Anda dapat melihat dampak nilai bersih (+Rp 868.5jt / +1.32%) dan mengunduh laporan perubahan scope dalam format <strong>.CSV</strong> untuk lampiran resmi Berita Acara Perubahan Pekerjaan.
                   </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/vendor_catalog.png"
-                      alt="Katalog Master Harga Vendor"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: SITE SUPERVISOR & MANDOR */}
-            {activeTab === 'supervisor' && (
-              <div className="space-y-6">
+            {/* ========================================================= */}
+            {/* TAB 3: FIELD OPS (SITE SUPERVISOR & MANDOR) */}
+            {/* ========================================================= */}
+            {activeTab === 'field' && (
+              <div className="space-y-7">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Site Supervisor & Mandor Utama
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase mb-1.5">
+                    Modul Peran Site Supervisor / Mandor / Site Engineer
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <HardHat className="w-6 h-6 text-emerald-400" />
-                    Panduan Operasional Lapangan: Log Harian, Foto GPS, & Kasbon
+                    Input Realisasi Lapangan, Laporan Harian & Kasbon Petty Cash
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Panduan ringkas dan cepat untuk personel di lapangan proyek yang menggunakan tablet atau smartphone.
+                  <p className="text-xs text-slate-400 mt-1">
+                    Panduan operasional lapangan: pencatatan nota belanja riil, pelacakan cuaca & klaim EOT, serta pertanggungjawaban kas kecil harian.
                   </p>
                 </div>
 
-                {/* Feature 1: Daily Site Log & Rain Delay */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-sky-400" />
-                    1. Pengisian Laporan Harian (Daily Site Log & Cuaca)
+                {/* Feature 1: Photo-to-Progress with GPS */}
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-mono">1</span>
+                    Input Realisasi Biaya dengan Foto Kamera & Watermark GPS
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Setiap sore sebelum meninggalkan site, Site Supervisor wajib mengisi catatan harian di <code>/projects/[id]/daily-logs</code>. Catatan ini adalah dokumen hukum utama kontraktor jika terjadi hujan lebat (*Force Majeure*) untuk mengajukan klaim <strong>Extension of Time (EOT)</strong> ke Owner agar bebas dari denda keterlambatan!
+                    Setiap bukti belanja material di lapangan (misal beli semen darurat atau sewa molen) wajib dilampirkan foto kuitansi dengan koordinat GPS aktual untuk mencegah penolakan klaim opname oleh Owner.
                   </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/daily_log.png"
-                      alt="Modal Input Laporan Harian Cuaca dan Pekerja"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-                    <span className="font-bold text-emerald-400">📋 Data yang Wajib Diisi:</span>
-                    <ul className="list-disc list-inside space-y-0.5 text-slate-400">
-                      <li><strong>Kondisi Cuaca 3 Sesi</strong>: Pagi, Siang, dan Sore (Cerah / Berawan / Gerimis / Hujan Lebat / Banjir).</li>
-                      <li><strong>Jam Hilang</strong>: Catat jika ada hujan lebat yang menghentikan pekerjaan (misal: 4 jam hilang).</li>
-                      <li><strong>Jumlah Kehadiran Pekerja</strong>: Mandor, Tukang, Kenek/Helper, dan Operator Alat.</li>
-                      <li><strong>Utilisasi Alat Berat</strong>: Status Excavator, Mobile Crane, dan Genset (Beroperasi / Standby / Rusak).</li>
-                    </ul>
-                  </div>
-                </div>
 
-                {/* Feature 2: Kasbon Lapangan & Petty Cash Settlement */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-amber-400" />
-                    2. Manajemen Kasbon Lapangan (Petty Cash)
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Site Supervisor sering membutuhkan uang kas mendesak (beli solar genset, kawat bendrat darurat, uang lembur). Melalui menu <code>/projects/[id]/petty-cash</code>:
-                  </p>
-                  <ol className="text-xs list-decimal list-inside space-y-1 text-slate-400">
-                    <li>Klik <strong>"+ Ajukan Kasbon Lapangan"</strong>, isi nominal dan keperluan belanja.</li>
-                    <li>Tunggu otorisasi Project Manager. Begitu disetujui, kasir site mencairkan dana tunai.</li>
-                    <li>Setelah belanja, klik tombol <strong>"+ Settle Nota"</strong> untuk memasukkan nilai nota riil, menghitung sisa kembalian, dan memotret kuitansi toko/SPBU dengan koordinat GPS valid.</li>
-                  </ol>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/petty_cash.png"
-                      alt="Modal Settlement Kasbon dengan Nota GPS"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                </div>
-
-                {/* Feature 3: Photo-to-Progress GPS */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-emerald-400" />
-                    3. Input Realisasi Biaya & Foto Lapangan Ber-GPS
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Formulir <code>/projects/[id]/actual/new</code> dilindungi fitur <strong>Separation of Duties</strong> (khusus peran Supervisor & PM). Dilengkapi pendeteksi GPS otomatis dari perangkat peramban dan cap watermark stempel koordinat & waktu anti-rekayasa pada foto opname.
-                  </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
                     <img
                       src="/docs/actual_input.png"
-                      alt="Form Realisasi Lapangan dengan Peringatan Overbudget"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
+                      alt="Input Realisasi Lapangan dengan GPS"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
                     />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: PROJECT MANAGER */}
-            {activeTab === 'pm' && (
-              <div className="space-y-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Project Manager (PM)
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <Activity className="w-6 h-6 text-purple-400" />
-                    Panduan Project Manager: Evaluasi EVM, Kurva S, & Audit Anomali
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Alat kendali proyek untuk memastikan margin keuntungan tidak tergerus dan jadwal penyelesaian tepat waktu.
-                  </p>
-                </div>
-
-                {/* Feature 1: Project Dashboard & Kurva S */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-purple-400" />
-                    1. Membaca Metrik Earned Value Management (EVM)
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Pada halaman utama dashboard proyek (<code>/projects/[id]</code>), sistem menghitung metrik finansial standar internasional secara deterministik:
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                      <span className="text-slate-400 block font-mono">Cost Performance (CPI)</span>
-                      <span className="text-base font-bold text-emerald-400 mt-0.5 block">&gt; 1.0 (Hemat)</span>
-                      <span className="text-[10px] text-slate-500">Nilai fisik &gt; biaya riil terbayar</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                      <span className="text-slate-400 block font-mono">Schedule Index (SPI)</span>
-                      <span className="text-base font-bold text-sky-400 mt-0.5 block">&ge; 1.0 (Tepat Waktu)</span>
-                      <span className="text-[10px] text-slate-500">Progres riil &ge; target rencana</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                      <span className="text-slate-400 block font-mono">Estimate at Completion (EAC)</span>
-                      <span className="text-base font-bold text-amber-400 mt-0.5 block">Proyeksi Akhir</span>
-                      <span className="text-[10px] text-slate-500">Estimasi total biaya saat serah terima</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                      <span className="text-slate-400 block font-mono">Cost Variance (CV)</span>
-                      <span className="text-base font-bold text-white mt-0.5 block">EV - AC</span>
-                      <span className="text-[10px] text-slate-500">Selisih laba kotor langsung</span>
-                    </div>
-                  </div>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/project_dashboard.png"
-                      alt="Dashboard Proyek Kurva S dan EVM"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                </div>
-
-                {/* Feature 2: Audit Anomali WBS */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    2. Audit Anomali Deviasi Biaya & Kebocoran Anggaran
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Klik tombol <strong>"Periksa Anomali Biaya"</strong> pada dashboard untuk memindai seluruh item pekerjaan WBS yang realisasinya menyimpang lebih dari 10% dari rencana baseline. Temuan deviasi dirangkum menjadi narasi insight otomatis:
-                  </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/anomaly_audit.png"
-                      alt="Hasil Audit Anomali Biaya WBS"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                </div>
-
-                {/* Feature 3: AI Copilot Proyek */}
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-sky-400" />
-                    3. Konsultasi Cepat via AI Copilot Proyek
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Klik tombol melayang di pojok kanan bawah untuk membuka drawer chat asisten AI. Anda dapat menanyakan ringkasan status pekerjaan, mencari penyebab keterlambatan, atau menghitung sisa pagu biaya tanpa harus membuka lembar Excel berlembar-lembar.
-                  </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/copilot_chat.png"
-                      alt="AI Copilot Chat Asisten Proyek"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 5: FINANCE & PURCHASING */}
-            {activeTab === 'finance' && (
-              <div className="space-y-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Finance, Kasir Proyek & Purchasing
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <DollarSign className="w-6 h-6 text-amber-400" />
-                    Panduan Portal Keuangan, Jurnal Akuntansi, & Hutang Vendor (AP)
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Jembatan integrasi antara operasi fisik proyek di lapangan dengan pembukuan akuntansi kantor pusat.
-                  </p>
-                </div>
-
-                <div className="space-y-3 p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-amber-400" />
-                    1. Portal Keuangan Terintegrasi (`/finance`)
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Finance Manager dapat memantau estimasi <em>Gross Profit Margin</em> proyek, total pengeluaran kas riil yang telah dibayarkan, serta daftar kewajiban pembayaran tempo (*Accounts Payable*) ke vendor supplier material.
-                  </p>
-                  <div className="rounded-xl overflow-hidden border border-slate-800">
-                    <img
-                      src="/docs/finance_portal.png"
-                      alt="Portal Keuangan dan Ekspor Jurnal Akuntansi"
-                      className="w-full object-cover hover:scale-[1.01] transition-transform"
-                    />
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-                    <span className="font-bold text-amber-400">📊 Ekspor Jurnal Akuntansi:</span>
-                    <p className="text-slate-400 leading-relaxed">
-                      Klik tombol <strong>"Ekspor Jurnal Pengeluaran (.CSV)"</strong> untuk menghasilkan data transaksi siap impor ke software akuntansi populer Indonesia seperti <strong>Accurate Online, Zahir, Jurnal.id, atau SAP</strong> tanpa perlu entri ulang manual.
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 4: Formulir input realisasi lapangan dengan akuisisi koordinat GPS otomatis dan watermark stempel lokasi fisik.
                     </p>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* TAB 6: APPROVER & OWNER / DIREKSI */}
-            {activeTab === 'approver' && (
-              <div className="space-y-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Approver, Owner Proyek, & Direksi
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <ShieldCheck className="w-6 h-6 text-rose-400" />
-                    Panduan Approver: Otorisasi RAB, CCO, & Kontrol Multi-Proyek
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Tata cara review dan persetujuan bertingkat dengan integritas audit trail permanen.
-                  </p>
-                </div>
-
-                <div className="space-y-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-rose-400" />
-                      Alur Persetujuan Bertingkat (Approval Flow):
-                    </h3>
-                    <ol className="list-decimal list-inside space-y-1.5 text-slate-300 leading-relaxed">
-                      <li>Buka menu <strong>Approvals</strong> (<code>/approvals</code>) pada bilah navigasi utama.</li>
-                      <li>Pilih berkas pengajuan RAB atau adendum perubahan volume (CCO) yang berstatus <em>Submitted</em>.</li>
-                      <li>Gunakan tautan <strong>"Lacak Revisi & Diff RAB"</strong> untuk menginspeksi rincian penambahan/pengurangan biaya secara transparan.</li>
-                      <li>Klik <strong>"Setujui (Approve)"</strong> untuk mengunci baseline atau berikan catatan revisi jika ditolak.</li>
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+                    <span className="font-bold text-white block">Cara Pengambilan Foto di Smartphone Lapangan:</span>
+                    <ol className="list-decimal list-inside space-y-1.5 text-slate-300">
+                      <li>Buka halaman proyek dan klik tombol hijau <strong>"Input Realisasi Lapangan"</strong>.</li>
+                      <li>Pilih item pekerjaan RAB yang sesuai dari menu dropdown.</li>
+                      <li>Masukkan jumlah volume fisik dan nominal rupiah belanja.</li>
+                      <li>Klik kotak kamera untuk memotret nota/struk toko bangunan. Sistem peramban akan meminta izin GPS dan menyematkan koordinat latitude/longitude secara instan.</li>
+                      <li>Klik <strong>"Simpan Transaksi Realisasi"</strong>. Data langsung terhubung ke dashboard anggaran kantor pusat!</li>
                     </ol>
                   </div>
+                </div>
 
-                  <div className="p-4 rounded-2xl bg-sky-950/30 border border-sky-800/40 space-y-1.5">
-                    <span className="font-bold text-sky-400 flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4" /> Portofolio Multi-Proyek:
-                    </span>
-                    <p className="text-slate-300 leading-relaxed">
-                      Direksi dapat memantau seluruh portofolio proyek konstruksi yang sedang berjalan (ongoing) dalam satu layar, mencakup progres fisik rata-rata, deviasi biaya kumulatif, dan status kesehatan kontrak.
+                {/* Feature 2: Daily Site Log & Rain Delay */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-mono">2</span>
+                    Daily Site Log & Rain Delay EOT Tracker (Dokumen Hukum Cuaca)
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Cuaca buruk seperti hujan lebat dan angin kencang sering menunda pengecoran beton. Jika tidak dicatat secara legal setiap hari, kontraktor berisiko terkena denda keterlambatan (<em>Liquidated Damages</em>).
+                  </p>
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
+                    <img
+                      src="/docs/daily_log.png"
+                      alt="Daily Site Log Modal Form"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 5: Modal input laporan harian: cuaca 3 sesi (Pagi/Siang/Sore), jam kerja hilang, absensi mandor/tukang, dan utilisasi alat berat.
                     </p>
                   </div>
+
+                  <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-800/40 text-xs space-y-1 text-slate-300">
+                    <span className="font-bold text-blue-400 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" /> Rekomendasi Hukum EOT Otomatis:
+                    </span>
+                    <p>
+                      Sistem menghitung akumulasi jam hilang (*Force Majeure Rain Delay*). Jika jam hilang mencapai kelipatan 8 jam, sistem otomatis menerbitkan rekomendasi klaim perpanjangan waktu (EOT Notice) yang siap diekspor ke <strong>.CSV</strong> sebagai bukti sah ke Konsultan MK.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 3: Petty Cash & Kasbon Lapangan */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-mono">3</span>
+                    Kasbon Lapangan & Pertanggungjawaban Petty Cash
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Ketika mandor membutuhkan uang kas kecil mendesak (beli solar genset lembur atau uang makan lembur malam), gunakan modul <strong>/projects/[id]/petty-cash</strong>.
+                  </p>
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
+                    <img
+                      src="/docs/petty_cash.png"
+                      alt="Petty Cash Settlement Modal"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 6: Modal settlement kasbon lapangan: input riil belanja, perhitungan otomatis sisa uang kembali, dan unggah struk SPBU/warung.
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Alur operasional: <strong>Pengajuan oleh Mandor</strong> &rarr; <strong>Disetujui PM</strong> &rarr; <strong>Dicairkan Kasir Site</strong> &rarr; <strong>Settlement Nota Kuitansi</strong>. Uang kembalian yang disetor ke kasir dihitung otomatis oleh sistem tanpa risiko selisih hitung!
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* TAB 7: ADMINISTRATOR PERUSAHAAN */}
-            {activeTab === 'admin' && (
-              <div className="space-y-6">
+            {/* ========================================================= */}
+            {/* TAB 4: PROJECT MANAGER (PM) */}
+            {/* ========================================================= */}
+            {activeTab === 'pm' && (
+              <div className="space-y-7">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30 text-xs font-mono font-semibold mb-2">
-                    Peran: Administrator & Subscriber SaaS
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[10px] font-bold uppercase mb-1.5">
+                    Modul Peran Project Manager / Site Manager / Direktur Operasional
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <Users className="w-6 h-6 text-blue-400" />
-                    Panduan Administrator: Manajemen Tim, Kuota Kursi, & Langganan
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Briefcase className="w-6 h-6 text-purple-400" />
+                    Kontrol Finansial EVM, Kurva S, Approval & Deteksi Anomali Biaya
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Pengelolaan entitas organisasi kontraktor, undang anggota tim, dan penugasan peran kerja.
+                  <p className="text-xs text-slate-400 mt-1">
+                    Kendali menyeluruh kesehatan biaya dan jadwal proyek konstruksi berbasis formula Earned Value Management (EVM) standar internasional.
+                  </p>
+                </div>
+
+                {/* Feature 1: EVM & Kurva S */}
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-purple-600 text-white text-xs flex items-center justify-center font-mono">1</span>
+                    Membaca Dashboard Indikator EVM & Grafik Kurva S
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Setiap hari Jumat atau akhir minggu, PM mengevaluasi grafik Kurva S untuk melihat keselarasan antara Bobot Rencana (PV), Bobot Realisasi Fisik (EV), dan Biaya Aktual yang Terbayar (AC).
+                  </p>
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
+                    <img
+                      src="/docs/project_dashboard.png"
+                      alt="Project Dashboard & EVM Metrics"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 7: Dashboard Proyek menampilkan Total Anggaran, Realisasi Lapangan, Variance Biaya, Kurva S mingguan, dan indeks CPI/SPI.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <span className="font-bold text-emerald-400 font-mono block">CPI = EV / AC (Cost Index)</span>
+                      <p className="text-slate-400">
+                        Jika <strong>CPI &gt; 1.0</strong>: Proyek hemat anggaran (Under Budget). Jika <strong>CPI &lt; 1.0</strong>: Terjadi pemborosan biaya aktual di lapangan.
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <span className="font-bold text-amber-400 font-mono block">SPI = EV / PV (Schedule Index)</span>
+                      <p className="text-slate-400">
+                        Jika <strong>SPI &gt; 1.0</strong>: Proyek lebih cepat dari master schedule. Jika <strong>SPI &lt; 1.0</strong>: Proyek mengalami deviasi keterlambatan fisik.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 2: AI Anomaly Audit */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-purple-600 text-white text-xs flex items-center justify-center font-mono">2</span>
+                    Audit Anomali Biaya Cerdas & AI Copilot Proyek
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Daripada menyisir ribuan baris spreadsheet keuangan secara manual, klik tombol <strong>"Jalankan Audit Anomali via AI"</strong>.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 space-y-1 shadow-lg">
+                      <img src="/docs/anomaly_audit.png" alt="Audit Anomali AI" className="w-full rounded-xl border border-slate-800" />
+                      <p className="text-[10px] text-slate-400 text-center">Gambar 8: Hasil deteksi anomali deviasi pos biaya.</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 space-y-1 shadow-lg">
+                      <img src="/docs/copilot_chat.png" alt="AI Copilot Proyek" className="w-full rounded-xl border border-slate-800" />
+                      <p className="text-[10px] text-slate-400 text-center">Gambar 9: Chat asisten AI kontekstual proyek.</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-300">
+                    Sistem cerdas AI akan memeriksa seluruh transaksi lapangan dan menyoroti pos-pos yang mengalami lonjakan di atas ambang batas toleransi (default ±10%), lalu merumuskan langkah mitigasi penghematan untuk PM.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* TAB 5: FINANCE & PROCUREMENT */}
+            {/* ========================================================= */}
+            {activeTab === 'finance' && (
+              <div className="space-y-7">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase mb-1.5">
+                    Modul Peran Finance / Accounting / Procurement / Logistik
+                  </div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <DollarSign className="w-6 h-6 text-amber-400" />
+                    Portal Keuangan, Gross Margin & Ekspor Jurnal Akuntansi
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Pengawasan arus kas keluar (Cash Out), rekonsiliasi hutang vendor tempo 30 hari, dan ekspor jurnal siap impor ke software akuntansi.
+                  </p>
+                </div>
+
+                {/* Feature 1: Finance Portal */}
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-600 text-slate-950 text-xs flex items-center justify-center font-mono font-bold">1</span>
+                    Dashboard Keuangan Proyek & Margin Laba Kotor
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Buka menu <strong>/finance</strong> pada navigasi utama untuk memantau ringkasan finansial lintas proyek perusahaan.
+                  </p>
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
+                    <img
+                      src="/docs/finance_portal.png"
+                      alt="Portal Keuangan & Ekspor Akuntansi"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 10: Portal Keuangan menampilkan Gross Margin, Kas Keluar Aktual, AP Vendor Jatuh Tempo, dan tombol ekspor jurnal otomatis.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                      <span className="text-slate-400 block font-medium">Gross Margin Real-time</span>
+                      <span className="text-lg font-bold text-emerald-400 mt-1 block">38.8%</span>
+                      <span className="text-[10px] text-slate-500">Nilai Kontrak dikurangi Realisasi Kas</span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                      <span className="text-slate-400 block font-medium">Accounts Payable (AP)</span>
+                      <span className="text-lg font-bold text-amber-400 mt-1 block">Rp 210.000.000</span>
+                      <span className="text-[10px] text-slate-500">Faktur vendor semen & besi tempo 30 hari</span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                      <span className="text-slate-400 block font-medium">Ekspor Jurnal Umum</span>
+                      <span className="text-lg font-bold text-sky-400 mt-1 block">CSV & Excel</span>
+                      <span className="text-[10px] text-slate-500">Format standar Accurate, Zahir, SAP</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 2: Vendor Price Catalog */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-600 text-slate-950 text-xs flex items-center justify-center font-mono font-bold">2</span>
+                    Master Data Katalog Harga Vendor & Riwayat RAB
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Bagian pengadaan dapat memelihara perpustakaan harga master untuk 4 kategori: <strong>Material</strong>, <strong>Upah / Manpower</strong>, <strong>Alat Berat</strong>, dan <strong>Subkontraktor</strong>.
+                  </p>
+
+                  {/* Screenshot Card */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-3 space-y-2 shadow-xl">
+                    <img
+                      src="/docs/vendor_catalog.png"
+                      alt="Katalog Harga Vendor Master Data"
+                      className="w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                    <p className="text-[11px] text-slate-400 italic text-center">
+                      Gambar 11: Master data katalog harga vendor dengan pencarian instan, filter kategori, dan parser impor daftar harga Excel.
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-slate-300">
+                    Gunakan tombol <strong>"+ Upload Excel / Pricelist"</strong> untuk mengimpor daftar harga supplier massal secara instan. Data ini akan langsung menjadi acuan pembanding saat tim Estimator menyusun tender baru.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* TAB 6: OWNER & DIREKSI (APPROVER) */}
+            {/* ========================================================= */}
+            {activeTab === 'owner' && (
+              <div className="space-y-7">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase mb-1.5">
+                    Modul Peran Owner / Direksi / Konsultan Pengawas (MK)
+                  </div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <ShieldCheck className="w-6 h-6 text-rose-400" />
+                    Portal Persetujuan (Approval Center) & Transparansi Opname
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Otorisasi anggaran baseline tender, validasi perubahan scope (CCO), dan verifikasi keabsahan bukti lapangan ber-geotag sebelum pencairan termin.
                   </p>
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                    <h3 className="text-sm font-bold text-white">Manajemen Tim di Halaman <code>/team</code>:</h3>
-                    <p className="text-slate-300 leading-relaxed">
-                      Sebagai pelanggan paket <em>Starter EPC</em> atau <em>Pro Contractor</em>, administrator dapat mengundang rekan kerja dengan hak akses yang terisolasi:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 text-slate-400">
-                      <li><strong>Project Manager</strong>: Kontrol penuh atas jadwal, EVM, otorisasi kasbon, dan laporan harian.</li>
-                      <li><strong>Estimator</strong>: Akses menyusun RAB, impor BOQ Excel, dan katalog harga vendor.</li>
-                      <li><strong>Site Supervisor / Mandor</strong>: Akses input realisasi belanja dan pengisian Laporan Harian di lapangan.</li>
-                      <li><strong>Finance</strong>: Akses portal keuangan, pencairan kasbon, dan ekspor jurnal akuntansi.</li>
-                      <li><strong>Approver / Owner</strong>: Akses persetujuan dokumen tender dan monitoring eksekutif.</li>
-                    </ul>
+                  <h3 className="text-base font-bold text-white">Alur Otorisasi & Transparansi Kontrak:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <span className="font-bold text-white block">1. Approval RAB Baseline</span>
+                      <p className="text-slate-400">
+                        Owner memeriksa rincian WBS dan AHSP tender. Begitu disetujui di Approval Center, proyek resmi berstatus <em>Active</em> dan siap menerima realisasi biaya.
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <span className="font-bold text-white block">2. Approval Adendum CCO</span>
+                      <p className="text-slate-400">
+                        Setiap perubahan volume diinspeksi lewat visual diff table. Selisih nilai kontrak transparan hingga ke level harga satuan.
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <span className="font-bold text-white block">3. Verifikasi Klaim EOT</span>
+                      <p className="text-slate-400">
+                        Konsultan MK dapat memverifikasi log cuaca harian (Rain Delay) untuk menilai apakah permohonan perpanjangan waktu kerja kontraktor sah secara teknis.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                    <h3 className="text-sm font-bold text-white">Pengaturan Langganan di <code>/settings/billing</code>:</h3>
-                    <p className="text-slate-300 leading-relaxed">
-                      Periksa sisa masa aktif langganan, jumlah kursi pengguna yang terpakai, dan opsi upgrade paket kapasitas proyek tak terbatas.
+                  <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-300 space-y-2">
+                    <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Kunci Keamanan & Integritas:
+                    </span>
+                    <p className="leading-relaxed">
+                      Sistem menerapkan prinsip <strong>Separation of Duties (SoD)</strong>: pembuat RAB (Estimator) tidak dapat menyetujui anggarannya sendiri, dan pencatat belanja (Mandor) tidak memiliki hak untuk mengubah batas pagu proyek.
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 8: FAQ & SOP */}
+            {/* ========================================================= */}
+            {/* TAB 7: FAQ & TROUBLESHOOTING */}
+            {/* ========================================================= */}
             {activeTab === 'faq' && (
               <div className="space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-400 border border-slate-700 text-xs font-mono font-semibold mb-2">
-                    Pusat Tanya Jawab & Standar Operasional Prosedur (SOP)
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-                    <HelpCircle className="w-6 h-6 text-slate-400" />
-                    Pertanyaan Umum (FAQ) & Kepatuhan Audit
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5 text-amber-400" />
+                    Pertanyaan Umum (FAQ) & Solusi Kendala
                   </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Jawaban praktis atas pertanyaan yang sering diajukan tim lapangan dan kantor pusat.
+                  </p>
                 </div>
 
                 <div className="space-y-3 text-xs">
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                    <h4 className="font-bold text-white">Q: Bagaimana cara kerja aplikasi jika di lokasi proyek tidak ada sinyal internet?</h4>
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
+                    <h4 className="font-bold text-white">Q: Bagaimana jika ponsel mandor tidak mendapatkan sinyal internet di lokasi site?</h4>
                     <p className="text-slate-400 leading-relaxed">
-                      A: Karsa Pantau adalah <strong>Progressive Web App (PWA)</strong>. Anda tetap dapat membuka formulir input realisasi dan laporan harian secara offline. Data akan tersimpan di peramban lokal (IndexedDB) dan otomatis tersinkronisasi saat sinyal kembali pulih.
+                      <strong>A:</strong> Karsa Pantau bekerja dengan teknologi <strong>Progressive Web App (PWA) Offline-First</strong>. Mandor tetap dapat mengisi foto dan formulir belanja seperti biasa. Data tersimpan di memori aman ponsel dan otomatis terkirim ke kantor pusat saat mendeteksi koneksi internet kembali.
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                    <h4 className="font-bold text-white">Q: Apakah formula EVM (Earned Value Management) dihitung oleh AI atau kalkulator pasti?</h4>
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
+                    <h4 className="font-bold text-white">Q: Mengapa tombol "Input Realisasi" terkunci atau tidak bisa menambah pengeluaran?</h4>
                     <p className="text-slate-400 leading-relaxed">
-                      A: Seluruh perhitungan finansial (PV, EV, AC, CPI, SPI, EAC, dan Variance) <strong>100% dihitung secara deterministik matematis</strong> di backend NestJS. Lapisan AI hanya digunakan untuk menyusun kalimat narasi penjelasan dan rekomendasi strategis, tidak pernah menghitung ulang angka finansial.
+                      <strong>A:</strong> Sesuai SOP konstruksi, realisasi belanja hanya dapat dicatat pada proyek yang RAB-nya telah berstatus <strong>Approved</strong>. Pastikan Project Manager atau Owner telah menyetujui draft RAB di Approval Center.
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                    <h4 className="font-bold text-white">Q: Bagaimana dasar hukum klaim perpanjangan waktu (EOT) akibat hujan lebat?</h4>
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
+                    <h4 className="font-bold text-white">Q: Apakah berkas Excel BOQ yang formatnya tidak standar bisa diimpor?</h4>
                     <p className="text-slate-400 leading-relaxed">
-                      A: Berdasarkan klausul standar kontrak konstruksi FIDIC / Permen PUPR, hujan lebat yang menghentikan aktivitas pekerjaan kritis dikategorikan sebagai keadaan kahar (*Force Majeure*). Rekap jam hilang di <strong>Daily Site Log</strong> dapat diekspor menjadi Berita Acara resmi untuk melampirkan permohonan penambahan waktu kalender tanpa denda keterlambatan.
+                      <strong>A:</strong> Ya! Smart BOQ Parser kami dilengkapi modal penyesuaian kolom interaktif (Human-in-the-Loop). Anda dapat memetakan secara manual kolom mana yang menjadi Deskripsi, Volume, dan Harga Satuan sebelum data dikunci.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
+                    <h4 className="font-bold text-white">Q: Bagaimana cara mengganti peran kerja (Role) saat mencoba sistem demo?</h4>
+                    <p className="text-slate-400 leading-relaxed">
+                      <strong>A:</strong> Cukup klik lencana peran di pojok kanan atas bilah navigasi (misal: <em>Role: PM</em>). Anda dapat beralih secara instan menjadi <em>Estimator, Mandor/Supervisor, Approver, atau Admin</em> tanpa perlu login berulang kali.
                     </p>
                   </div>
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </div>
