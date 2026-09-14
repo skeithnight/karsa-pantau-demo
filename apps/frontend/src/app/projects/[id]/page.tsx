@@ -112,7 +112,7 @@ export default function ProjectDashboardPage() {
   const handleTriggerAnomaly = async () => {
     setAiLoading(true);
     try {
-      const res = await apiRequest(`/ai/anomalies/${projectId}`);
+      const res = await apiRequest(`/ai/anomalies/${projectId}`, { method: 'POST' });
       const text =
         extractInsightText(res.aiAnalysis) ||
         'Seluruh pos pekerjaan berada dalam batas toleransi anggaran (efisien).';

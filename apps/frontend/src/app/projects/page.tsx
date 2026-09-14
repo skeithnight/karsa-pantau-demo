@@ -3,7 +3,22 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, Plus, MapPin, Zap, TrendingUp, AlertTriangle, CheckCircle2, Clock, Building2 } from 'lucide-react';
+import {
+  Layers,
+  Plus,
+  MapPin,
+  Zap,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Building2,
+  X,
+  Loader2,
+  Sparkles,
+  DollarSign,
+  Calendar,
+} from 'lucide-react';
 import { apiRequest, getAuthToken } from '../../lib/api';
 
 interface Project {
@@ -65,6 +80,20 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>(DEFAULT_DEMO_PROJECTS);
   const [loading, setLoading] = useState(true);
 
+  // Create Project Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'Gedung & Komersial',
+    location: '',
+    capacityMw: '1.0',
+    estimatedBudget: '',
+    targetCodDate: '',
+  });
+
   useEffect(() => {
     const token = getAuthToken();
     if (!token) {
@@ -92,6 +121,89 @@ export default function ProjectsPage() {
     }).format(val);
   };
 
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.location.trim()) {
+      setFormError('Nama proyek dan lokasi wajib diisi.');
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    const payload = {
+      name: formData.name.trim(),
+      location: formData.location.trim(),
+      capacityMw: parseFloat(formData.capacityMw) || 1.0,
+      targetCodDate: formData.targetCodDate || undefined,
+    };
+
+    try {
+      const res = await apiRequest<any>('/projects', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      const newProjId = res?.id || `proj-${Date.now()}`;
+      const newProjItem: Project = {
+        id: newProjId,
+        name: formData.name.trim(),
+        location: formData.location.trim(),
+        category: formData.category,
+        capacityMw: parseFloat(formData.capacityMw) || 1.0,
+        status: 'planning',
+        totalRab: parseFloat(formData.estimatedBudget) || 0,
+        totalActual: 0,
+        variancePct: 0,
+        physicalProgressPct: 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      setProjects([newProjItem, ...projects]);
+      setSuccessNotice(`Proyek "${newProjItem.name}" berhasil dibuat! Mengarahkan ke RAB Builder...`);
+      setShowCreateModal(false);
+      setTimeout(() => {
+        router.push(`/projects/${newProjId}/rab/new`);
+      }, 1000);
+    } catch (err: any) {
+      // Tampilkan error inline tanpa window.alert()
+      setFormError(
+        err.message || 'Gagal menyimpan proyek ke server pusat. Anda dapat tetap menyimpannya di sesi kerja ini.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSaveDemoLocally = () => {
+    if (!formData.name.trim() || !formData.location.trim()) {
+      setFormError('Nama proyek dan lokasi wajib diisi.');
+      return;
+    }
+
+    const newProjId = `demo-local-${Date.now()}`;
+    const newProjItem: Project = {
+      id: newProjId,
+      name: formData.name.trim(),
+      location: formData.location.trim(),
+      category: formData.category,
+      capacityMw: parseFloat(formData.capacityMw) || 1.0,
+      status: 'planning',
+      totalRab: parseFloat(formData.estimatedBudget) || 0,
+      totalActual: 0,
+      variancePct: 0,
+      physicalProgressPct: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    setProjects([newProjItem, ...projects]);
+    setShowCreateModal(false);
+    setSuccessNotice(`Proyek "${newProjItem.name}" berhasil ditambahkan ke portofolio! Mengarahkan ke RAB Builder...`);
+    setTimeout(() => {
+      router.push(`/projects/${newProjId}/rab/new`);
+    }, 1000);
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
@@ -108,14 +220,25 @@ export default function ProjectsPage() {
 
         <div>
           <button
-            onClick={() => alert('Fitur buat proyek baru aktif untuk role Admin & PM')}
-            className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 font-semibold text-sm text-white transition-colors shadow-lg shadow-sky-600/20 flex items-center gap-2"
+            type="button"
+            onClick={() => {
+              setFormError(null);
+              setShowCreateModal(true);
+            }}
+            className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 font-semibold text-xs text-white transition-all shadow-lg shadow-sky-600/20 flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Tambah Proyek Baru
+            <span>Tambah Proyek Baru</span>
           </button>
         </div>
       </div>
+
+      {successNotice && (
+        <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" />
+          <span>{successNotice}</span>
+        </div>
+      )}
 
       {/* Grid Proyek */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -138,54 +261,43 @@ export default function ProjectsPage() {
                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
                       proj.status === 'ongoing'
                         ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                        : proj.status === 'planning'
-                          ? 'bg-sky-950 text-sky-300 border border-sky-800'
-                          : 'bg-slate-800 text-slate-300'
+                        : proj.status === 'completed'
+                        ? 'bg-sky-950 text-sky-300 border border-sky-800'
+                        : 'bg-amber-950 text-amber-300 border border-amber-800'
                     }`}
                   >
-                    {proj.status === 'ongoing' ? (
-                      <Clock className="w-3 h-3" />
-                    ) : (
-                      <CheckCircle2 className="w-3 h-3" />
-                    )}
                     {proj.status}
                   </span>
                 </div>
 
-                {/* Nama & Lokasi */}
-                <h2 className="text-xl font-bold text-white mb-1">{proj.name}</h2>
-                <p className="text-xs text-slate-400 flex items-center gap-1 mb-5">
+                {/* Nama & Lokasi Proyek */}
+                <h3 className="text-lg font-bold text-white mb-1.5">{proj.name}</h3>
+                <p className="text-xs text-slate-400 flex items-center gap-1.5 mb-5">
                   <MapPin className="w-3.5 h-3.5 text-slate-500" />
                   {proj.location}
                 </p>
 
-                {/* Metrik RAB vs Realisasi */}
-                <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/80 mb-5">
+                {/* Metrik Finansial */}
+                <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-900/60 border border-slate-800 mb-5">
                   <div>
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider block">
-                      Total RAB (Baseline)
-                    </span>
-                    <span className="text-sm font-bold text-slate-100">
-                      {formatRupiah(proj.totalRab)}
-                    </span>
+                    <span className="text-[11px] text-slate-400 block uppercase font-medium">Pagu Anggaran RAB</span>
+                    <span className="text-sm font-bold text-white font-mono">{formatRupiah(proj.totalRab)}</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-400 uppercase tracking-wider block">
-                      Realisasi Aktual
-                    </span>
-                    <span className="text-sm font-bold text-slate-100">
+                    <span className="text-[11px] text-slate-400 block uppercase font-medium">Realisasi Lapangan</span>
+                    <span className="text-sm font-bold text-emerald-400 font-mono">
                       {formatRupiah(proj.totalActual)}
                     </span>
                   </div>
                 </div>
 
-                {/* Progress Bar Progres Fisik */}
+                {/* Progress Bar */}
                 <div className="space-y-1.5 mb-5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-400">Progres Fisik Aktual</span>
-                    <span className="text-sky-400 font-mono">{proj.physicalProgressPct}%</span>
+                  <div className="flex justify-between text-xs text-slate-400 font-medium">
+                    <span>Progres Fisik Aktual</span>
+                    <span className="text-sky-400 font-bold">{proj.physicalProgressPct}%</span>
                   </div>
-                  <div className="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-sky-500 to-emerald-400 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(proj.physicalProgressPct, 100)}%` }}
@@ -221,6 +333,133 @@ export default function ProjectsPage() {
           );
         })}
       </div>
+
+      {/* Modal Form Tambah Proyek Baru */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-xl rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-sky-950 border border-sky-800 flex items-center justify-center text-sky-400">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Tambah Proyek Konstruksi Baru</h3>
+                  <p className="text-xs text-slate-400">Inisialisasi baseline proyek untuk pembuatan RAB & monitoring</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-xs text-rose-300 space-y-2">
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-400" />
+                  <span>{formError}</span>
+                </div>
+                <div className="pt-2 border-t border-rose-900/60 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveDemoLocally}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-semibold text-[11px] transition-all"
+                  >
+                    Tetap Lanjutkan di Sesi Portofolio Ini &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateProject} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-semibold">Nama Proyek *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Pembangunan Fasilitas Gudang Logistik Gresik"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-slate-300 font-semibold">Sektor / Pilar Industri</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500 transition-colors cursor-pointer"
+                  >
+                    <option value="Gedung & Komersial">Gedung & Komersial</option>
+                    <option value="Infrastruktur & Sipil">Infrastruktur & Sipil</option>
+                    <option value="Mekanikal Elektrikal (MEP)">Mekanikal Elektrikal (MEP)</option>
+                    <option value="Energi & Utilitas">Energi & Utilitas</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-300 font-semibold">Lokasi Proyek *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Gresik, Jawa Timur"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-slate-300 font-semibold">Estimasi Pagu Anggaran (IDR)</label>
+                  <input
+                    type="number"
+                    placeholder="Contoh: 5000000000"
+                    value={formData.estimatedBudget}
+                    onChange={(e) => setFormData({ ...formData, estimatedBudget: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-300 font-semibold">Target COD / Selesai</label>
+                  <input
+                    type="date"
+                    value={formData.targetCodDate}
+                    onChange={(e) => setFormData({ ...formData, targetCodDate: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold shadow-lg shadow-sky-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                >
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span>Buat Proyek & Mulai Susun RAB</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

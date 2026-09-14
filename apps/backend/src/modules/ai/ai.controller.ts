@@ -36,6 +36,7 @@ export class AiController {
     return this.semanticSearchService.searchPriceHistory(query || '', orgId);
   }
 
+  @Get('anomalies/:projectId')
   @Post('anomalies/:projectId')
   async triggerAnomalyDetection(
     @Param('projectId') projectId: string,

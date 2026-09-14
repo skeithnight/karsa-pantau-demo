@@ -52,9 +52,10 @@ export default function ActualInputPage() {
   const [description, setDescription] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'warning' | 'info'; text: string } | null>(
-    null,
-  );
+  const [statusMessage, setStatusMessage] = useState<{
+    type: 'success' | 'warning' | 'info' | 'error';
+    text: string;
+  } | null>(null);
 
   const selectedItem = rabItems.find((i) => i.id === selectedItemId) || rabItems[0];
 
@@ -79,7 +80,10 @@ export default function ActualInputPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vendor || !qty || !unitPrice) {
-      alert('Mohon lengkapi vendor, qty, dan harga satuan!');
+      setStatusMessage({
+        type: 'error',
+        text: 'Mohon lengkapi vendor, qty, dan harga satuan!',
+      });
       return;
     }
 
@@ -154,11 +158,15 @@ export default function ActualInputPage() {
           className={`p-4 rounded-xl border text-xs flex items-center gap-2.5 ${
             statusMessage.type === 'success'
               ? 'bg-emerald-950/80 border-emerald-800 text-emerald-300'
+              : statusMessage.type === 'error'
+              ? 'bg-rose-950/80 border-rose-800 text-rose-300'
               : 'bg-sky-950/80 border-sky-800 text-sky-300'
           }`}
         >
           {statusMessage.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          ) : statusMessage.type === 'error' ? (
+            <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
           ) : (
             <WifiOff className="w-5 h-5 text-sky-400 flex-shrink-0" />
           )}

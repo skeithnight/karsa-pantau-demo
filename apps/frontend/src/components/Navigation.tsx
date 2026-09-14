@@ -16,6 +16,7 @@ import {
   Plus,
   Sparkles,
   BookOpen,
+  DollarSign,
 } from 'lucide-react';
 import { getPendingOfflineEntries } from '../lib/offline/sync-queue';
 import { clearAuthToken, getActiveOrganization, setActiveOrganization } from '../lib/api';
@@ -204,15 +205,15 @@ export function Navigation() {
               </Link>
 
               <Link
-                href="/settings/billing"
+                href="/finance"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname.startsWith('/settings/billing')
-                    ? 'bg-slate-800 text-amber-400 border border-slate-700'
+                  pathname.startsWith('/finance')
+                    ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`}
               >
-                <CreditCard className="w-4 h-4" />
-                <span className="hidden sm:inline">Langganan</span>
+                <DollarSign className="w-4 h-4" />
+                <span>Portal Keuangan</span>
               </Link>
 
               <Link
@@ -228,15 +229,15 @@ export function Navigation() {
               </Link>
 
               <Link
-                href="/pricing"
+                href="/settings/billing"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname === '/pricing'
-                    ? 'bg-slate-800 text-sky-400 border border-slate-700'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  pathname.startsWith('/settings/billing')
+                    ? 'bg-slate-800 text-amber-400 border border-slate-700'
+                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`}
               >
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span className="hidden sm:inline">Paket Harga</span>
+                <CreditCard className="w-4 h-4" />
+                <span>Langganan</span>
               </Link>
             </>
           ) : (

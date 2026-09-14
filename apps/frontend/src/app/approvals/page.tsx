@@ -80,15 +80,18 @@ export default function ApprovalsPage() {
     }
   };
 
+  const [rejectError, setRejectError] = useState<string | null>(null);
+
   const handleOpenReject = (rabId: string) => {
     setSelectedRabId(rabId);
     setRejectNote('');
+    setRejectError(null);
     setRejectModalOpen(true);
   };
 
   const handleConfirmReject = async () => {
     if (!rejectNote.trim()) {
-      alert('Catatan penolakan wajib diisi!');
+      setRejectError('Catatan penolakan wajib diisi!');
       return;
     }
 
@@ -241,6 +244,7 @@ export default function ApprovalsPage() {
                 placeholder="Contoh: Harga satuan kabel DC melebihi batas benchmark Garut 2025, mohon negosiasi ulang atau sesuaikan volume."
                 className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-rose-500"
               />
+              {rejectError && <p className="text-xs text-rose-400 mt-1.5 font-medium">{rejectError}</p>}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

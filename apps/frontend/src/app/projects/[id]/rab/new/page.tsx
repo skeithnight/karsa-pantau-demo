@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Send, Calculator, Layers, AlertCircle, CheckCircle, Sparkles, Search, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Send, Calculator, Layers, AlertCircle, AlertTriangle, CheckCircle, Sparkles, Search, Loader2 } from 'lucide-react';
 import { WorkPackage, CostCategory } from '@karsa/shared-types';
 import { apiRequest } from '../../../../../lib/api';
 
@@ -92,12 +92,15 @@ export default function RabBuilderPage() {
 
   const totalRab = items.reduce((acc, item) => acc + item.subtotal, 0);
 
+  const [formError, setFormError] = useState<string | null>(null);
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !volume || !unitPrice) {
-      alert('Mohon isi seluruh field pekerjaan!');
+      setFormError('Mohon isi seluruh field pekerjaan!');
       return;
     }
+    setFormError(null);
 
     const newItem: BuilderItem = {
       id: Date.now().toString(),
@@ -124,9 +127,10 @@ export default function RabBuilderPage() {
 
   const handleSubmitForApproval = async () => {
     if (items.length === 0) {
-      alert('RAB harus memiliki minimal 1 item pekerjaan sebelum diajukan!');
+      setFormError('RAB harus memiliki minimal 1 item pekerjaan sebelum diajukan!');
       return;
     }
+    setFormError(null);
 
     setSaving(true);
     try {
@@ -186,6 +190,13 @@ export default function RabBuilderPage() {
           <span className="text-xl font-bold text-emerald-400 font-mono">{formatRupiah(totalRab)}</span>
         </div>
       </div>
+
+      {formError && (
+        <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-300 text-sm flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
 
       {message && (
         <div className="p-4 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-sm flex items-center gap-2">
