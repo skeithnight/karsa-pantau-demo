@@ -21,6 +21,8 @@ import {
   AlertTriangle,
   Building2,
   GitCompare,
+  Calendar,
+  Wallet,
 } from 'lucide-react';
 
 import { apiRequest } from '../../../lib/api';
@@ -242,6 +244,22 @@ export default function ProjectDashboardPage() {
           >
             <GitCompare className="w-4 h-4 text-amber-400" />
             Lacak Revisi & Diff RAB
+          </Link>
+
+          <Link
+            href={`/projects/${projectId}/daily-logs`}
+            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <Calendar className="w-4 h-4 text-sky-400" />
+            Laporan Harian (Site Log)
+          </Link>
+
+          <Link
+            href={`/projects/${projectId}/petty-cash`}
+            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <Wallet className="w-4 h-4 text-purple-400" />
+            Kasbon Lapangan (Petty Cash)
           </Link>
         </div>
       </div>

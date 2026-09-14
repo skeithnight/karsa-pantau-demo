@@ -10,6 +10,8 @@ import { ManpowerModule } from './modules/manpower/manpower.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { AiModule } from './modules/ai/ai.module';
+import { DailyLogsModule } from './modules/daily-logs/daily-logs.module';
+import { PettyCashModule } from './modules/petty-cash/petty-cash.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { AiModule } from './modules/ai/ai.module';
     ActualsModule,
     ProgressModule,
     ManpowerModule,
+    DailyLogsModule,
+    PettyCashModule,
     AiModule,
   ],
 })
