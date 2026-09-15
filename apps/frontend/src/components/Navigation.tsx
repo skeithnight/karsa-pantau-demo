@@ -147,7 +147,7 @@ export function Navigation() {
     setShowAccountDropdown(false);
     setShowOrgDropdown(false);
     setMobileMenuOpen(false);
-    router.push('/login');
+    window.location.href = '/';
   };
 
   if (pathname === '/login' || pathname === '/register') {
