@@ -7,6 +7,7 @@ import { apiRequest, setAuthToken, setActiveOrganization } from '../../lib/api';
 import Link from 'next/link';
 
 const DEMO_ACCOUNTS = [
+  { role: 'Admin PT Cipta Daya Engineering', email: 'syafakhosyiah27@gmail.com', name: 'Syafak Hosyiah' },
   { role: 'Project Manager (PM)', email: 'pm@karsapantau.id', name: 'Budi Santoso' },
   { role: 'Estimator (RAB)', email: 'estimator@karsapantau.id', name: 'Siti Rahma' },
   { role: 'Approver (Direktur)', email: 'approver@karsapantau.id', name: 'Ir. Hendra' },
@@ -16,7 +17,7 @@ const DEMO_ACCOUNTS = [
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('pm@karsapantau.id');
+  const [email, setEmail] = useState('syafakhosyiah27@gmail.com');
   const [password, setPassword] = useState('Password123!');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,29 @@ export default function LoginPage() {
                     : 'admin',
           }),
         );
+        if (matched.email.toLowerCase().includes('syafakhosyiah')) {
+          setActiveOrganization({
+            id: 'cd-org-01',
+            name: 'PT Cipta Daya Engineering',
+            slug: 'cipta-daya-engineering',
+            status: 'active',
+            myRole: 'admin',
+            currentPlan: 'Starter EPC',
+          });
+          localStorage.setItem(
+            'karsa_user_orgs',
+            JSON.stringify([
+              {
+                id: 'cd-org-01',
+                name: 'PT Cipta Daya Engineering',
+                slug: 'cipta-daya-engineering',
+                status: 'active',
+                myRole: 'admin',
+                currentPlan: 'Starter EPC',
+              },
+            ]),
+          );
+        }
         window.dispatchEvent(new Event('karsa_auth_change'));
         router.push(getRedirectUrl());
       } else {
