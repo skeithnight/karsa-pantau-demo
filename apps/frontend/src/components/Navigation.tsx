@@ -70,7 +70,16 @@ export function Navigation() {
 
     if (token && userStr) {
       try {
-        setCurrentUser(JSON.parse(userStr));
+        const parsed = JSON.parse(userStr);
+        const org = getActiveOrganization();
+        const isProductionOrg = Boolean(org && org.slug !== 'karsa-solar');
+        if (isProductionOrg) {
+          localStorage.removeItem('karsa_demo_mode');
+          if (org.myRole) {
+            parsed.role = org.myRole;
+          }
+        }
+        setCurrentUser(parsed);
       } catch {
         setCurrentUser(null);
       }
@@ -155,6 +164,11 @@ export function Navigation() {
   }
 
   const role = (currentUser?.role || 'admin').toLowerCase();
+  const isDemoSession = Boolean(
+    activeOrg?.slug === 'karsa-solar' &&
+    typeof window !== 'undefined' &&
+    localStorage.getItem('karsa_demo_mode') === 'true'
+  );
 
   // Core Operational Navigation Links (Streamlined & Clean)
   const coreNavItems = [
@@ -450,7 +464,7 @@ export function Navigation() {
                       <span className="text-[10px] text-slate-500">Kelola</span>
                     </Link>
                     <Link
-                      href="/settings/billing"
+                      href="/settings/billing?action=upgrade"
                       onClick={() => setShowAccountDropdown(false)}
                       className="w-full px-2.5 py-2 rounded-lg text-xs text-slate-200 hover:text-white hover:bg-slate-800 flex items-center justify-between transition-colors group"
                     >
@@ -458,36 +472,38 @@ export function Navigation() {
                         <CreditCard className="w-3.5 h-3.5 text-sky-400 group-hover:scale-110 transition-transform" />
                         <span>Paket & Billing</span>
                       </div>
-                      <span className="text-[10px] text-slate-500">Upgrade</span>
+                      <span className="text-[10px] font-semibold text-sky-400 group-hover:underline">Upgrade</span>
                     </Link>
                   </div>
 
-                  {/* RBAC Role Switcher Section */}
-                  <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between px-1">
-                      <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                        Ganti Peran Aktif (RBAC)
-                      </p>
-                      <span className="text-[9px] text-sky-400 font-mono">Demo Mode</span>
+                  {/* RBAC Role Switcher Section (Hanya Aktif di Mode Demo Sandbox) */}
+                  {isDemoSession && (
+                    <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between px-1">
+                        <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                          Ganti Peran Aktif (RBAC)
+                        </p>
+                        <span className="text-[9px] text-sky-400 font-mono">Demo Mode</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1">
+                        {availableRoles.map((r) => (
+                          <button
+                            key={r.key}
+                            type="button"
+                            onClick={() => handleSwitchRole(r.key)}
+                            className={`px-2 py-1.5 rounded-lg text-[11px] text-left truncate transition-all flex items-center justify-between ${
+                              role === r.key
+                                ? 'bg-sky-950 text-sky-300 font-bold border border-sky-800 shadow-sm'
+                                : 'bg-slate-950/60 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80'
+                            }`}
+                          >
+                            <span className="truncate">{r.label.split(' ')[0]}</span>
+                            {role === r.key && <UserCheck className="w-3 h-3 text-sky-400 shrink-0" />}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-1">
-                      {availableRoles.map((r) => (
-                        <button
-                          key={r.key}
-                          type="button"
-                          onClick={() => handleSwitchRole(r.key)}
-                          className={`px-2 py-1.5 rounded-lg text-[11px] text-left truncate transition-all flex items-center justify-between ${
-                            role === r.key
-                              ? 'bg-sky-950 text-sky-300 font-bold border border-sky-800 shadow-sm'
-                              : 'bg-slate-950/60 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80'
-                          }`}
-                        >
-                          <span className="truncate">{r.label.split(' ')[0]}</span>
-                          {role === r.key && <UserCheck className="w-3 h-3 text-sky-400 shrink-0" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  )}
 
                   {/* Logout Button */}
                   <div className="pt-2 border-t border-slate-800">
@@ -636,22 +652,28 @@ export function Navigation() {
                 <span>Tim & Hak Akses Anggota</span>
               </Link>
               <Link
-                href="/settings/billing"
+                href="/settings/billing?action=upgrade"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-900 hover:text-white flex items-center gap-2 transition-colors"
+                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-900 hover:text-white flex items-center justify-between transition-colors"
               >
-                <CreditCard className="w-4 h-4 text-sky-400" />
-                <span>Paket Langganan & Billing</span>
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-sky-400" />
+                  <span>Paket Langganan & Billing</span>
+                </div>
+                <span className="text-[10px] font-semibold text-sky-400">Upgrade</span>
               </Link>
             </div>
           )}
 
-          {/* Quick Role Switcher in Mobile Drawer */}
-          {currentUser && (
+          {/* Quick Role Switcher in Mobile Drawer (Hanya Aktif di Mode Demo Sandbox) */}
+          {currentUser && isDemoSession && (
             <div className="pt-2 border-t border-slate-800 space-y-1.5">
-              <p className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 tracking-wider">
-                Ganti Peran Uji Coba (RBAC Switcher)
-              </p>
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                  Ganti Peran Aktif (RBAC)
+                </p>
+                <span className="text-[9px] text-sky-400 font-mono">Demo Mode</span>
+              </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {availableRoles.map((r) => (
                   <button
@@ -669,17 +691,19 @@ export function Navigation() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
 
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-950/40 flex items-center gap-2 font-medium"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Keluar dari Akun</span>
-                </button>
-              </div>
+          {currentUser && (
+            <div className="pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-950/40 flex items-center gap-2 font-medium"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Keluar dari Akun</span>
+              </button>
             </div>
           )}
         </div>

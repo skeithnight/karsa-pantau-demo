@@ -18,7 +18,8 @@ import {
   Loader2,
   Receipt,
   Download,
-  Calendar
+  Calendar,
+  X
 } from 'lucide-react';
 import { 
   apiRequest, 
@@ -43,6 +44,7 @@ function BillingSettingsContent() {
   const [invoices, setInvoices] = useState<SubscriptionInvoice[]>([]);
   
   // Checkout & Upgrade State
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showUpgradeSection, setShowUpgradeSection] = useState(false);
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(BillingCycle.MONTHLY);
   const [checkingOut, setCheckingOut] = useState(false);
@@ -105,6 +107,13 @@ function BillingSettingsContent() {
           setActiveInvoice(found);
         }
       }
+
+      // Check if URL has ?action=upgrade to open upgrade modal automatically
+      const actionQuery = searchParams.get('action');
+      if (actionQuery === 'upgrade') {
+        setShowUpgradeModal(true);
+        setShowUpgradeSection(true);
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal memuat informasi langganan.');
     } finally {
@@ -136,8 +145,9 @@ function BillingSettingsContent() {
 
       // Reload invoices and show confirmation modal
       await loadBillingData();
-      setActiveInvoice(res.invoice);
+      setShowUpgradeModal(false);
       setShowUpgradeSection(false);
+      setActiveInvoice(res.invoice);
       setSuccessMessage(`Tagihan #${res.invoice.invoiceNumber} berhasil dibuat.`);
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal memproses perubahan paket.');
@@ -196,11 +206,17 @@ function BillingSettingsContent() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setShowUpgradeSection(!showUpgradeSection)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-sky-500 to-amber-500 hover:from-sky-400 hover:to-amber-400 text-slate-950 shadow-lg shadow-sky-500/20 transition-all cursor-pointer"
+            onClick={() => {
+              setShowUpgradeModal(true);
+              setShowUpgradeSection(true);
+              setTimeout(() => {
+                document.getElementById('pilih-paket')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-sky-500 to-amber-500 hover:from-sky-400 hover:to-amber-400 text-slate-950 shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
-            <span>{showUpgradeSection ? 'Tutup Pilihan Paket' : 'Upgrade / Ubah Paket'}</span>
+            <span>Upgrade / Ubah Paket</span>
           </button>
         </div>
       </div>
@@ -429,7 +445,7 @@ function BillingSettingsContent() {
 
       {/* Upgrade / Plan Selection Section */}
       {showUpgradeSection && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-sky-900/50 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="pilih-paket" className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-sky-900/50 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">
@@ -633,6 +649,188 @@ function BillingSettingsContent() {
           </table>
         </div>
       </div>
+
+      {/* Interactive Upgrade Modal Dialog */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative my-auto max-h-[92vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/80 text-sky-400 text-xs font-semibold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Upgrade Skalabilitas EPC</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Pilih Paket Langganan Perusahaan
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Tingkatkan kapasitas proyek, kuota anggota tim, dan AI OCR untuk <strong className="text-slate-200">{activeOrg?.name || 'perusahaan Anda'}</strong> tanpa downtime.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUpgradeModal(false)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Cycle Toggle */}
+            <div className="flex justify-center">
+              <div className="flex items-center p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCycle(BillingCycle.MONTHLY)}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    selectedCycle === BillingCycle.MONTHLY
+                      ? 'bg-sky-500 text-slate-950 shadow-md font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Tagihan Bulanan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCycle(BillingCycle.YEARLY)}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    selectedCycle === BillingCycle.YEARLY
+                      ? 'bg-sky-500 text-slate-950 shadow-md font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span>Tahunan</span>
+                  <span className="text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-bold">
+                    Hemat 20%
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Plans Grid in Modal */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {plans
+                .filter((p) => p.code !== PlanCode.TRIAL)
+                .map((plan) => {
+                  const isCurrent = usage?.planCode === plan.code;
+                  const isPro = plan.code === PlanCode.PRO;
+                  const price = selectedCycle === BillingCycle.YEARLY ? plan.priceYearly : plan.priceMonthly;
+
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all relative ${
+                        isPro
+                          ? 'bg-gradient-to-b from-slate-900 to-slate-950 border-sky-500 shadow-xl shadow-sky-500/15 ring-1 ring-sky-500/40'
+                          : isCurrent
+                          ? 'bg-slate-950/80 border-slate-700'
+                          : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {isPro && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-sky-500 to-amber-500 text-slate-950 font-black text-[10px] uppercase rounded-full shadow-md">
+                          Rekomendasi Kontraktor
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-base font-bold text-white">{plan.name}</h4>
+                          {isCurrent && (
+                            <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/80 px-2 py-0.5 rounded-full font-semibold">
+                              Paket Aktif
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="text-xl font-black text-white">
+                            {formatRupiah(price)}
+                          </div>
+                          <span className="text-[11px] text-slate-400">
+                            {selectedCycle === BillingCycle.YEARLY ? '/ tahun (ditagih tahunan)' : '/ bulan'}
+                          </span>
+                        </div>
+
+                        <ul className="space-y-2 text-xs text-slate-300 pt-3 border-t border-slate-800">
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                            <span>Hingga <strong>{plan.maxProjects >= 9999 ? 'Unlimited' : plan.maxProjects} Proyek</strong> Aktif</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                            <span>Hingga <strong>{plan.maxUsers >= 9999 ? 'Unlimited' : plan.maxUsers} Pengguna</strong></span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                            <span><strong>{plan.aiQuotaPerMonth}x</strong> OCR Struk / Bulan</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                            <span>Kalkulator EVM & Kurva S</span>
+                          </li>
+                          {isPro && (
+                            <li className="flex items-center gap-2">
+                              <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span className="text-amber-200">Export Laporan PDF Eksekutif</span>
+                            </li>
+                          )}
+                          {plan.code === PlanCode.ENTERPRISE && (
+                            <li className="flex items-center gap-2">
+                              <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span className="text-amber-200">Dedicated SLA & Private Cloud</span>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <div className="mt-5 pt-3 border-t border-slate-800">
+                        {plan.code === PlanCode.ENTERPRISE ? (
+                          <a
+                            href={`https://wa.me/6281280009999?text=${encodeURIComponent(`Halo Tim Sales Karsa Pantau, kami dari ${activeOrg?.name || 'perusahaan kami'} ingin berkonsultasi mengenai paket Enterprise custom.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          >
+                            <span>Hubungi Sales Enterprise</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={isCurrent || checkingOut}
+                            onClick={() => handleCheckout(plan.code)}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                              isCurrent
+                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                : isPro
+                                ? 'bg-gradient-to-r from-sky-500 to-amber-500 hover:from-sky-400 hover:to-amber-400 text-slate-950 shadow-md shadow-sky-500/20 cursor-pointer'
+                                : 'bg-sky-500 hover:bg-sky-400 text-slate-950 cursor-pointer'
+                            }`}
+                          >
+                            {checkingOut ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : isCurrent ? (
+                              'Paket Sedang Aktif'
+                            ) : (
+                              `Upgrade ke ${plan.name}`
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="text-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/80">
+              Transaksi B2B otomatis dengan Virtual Account BCA & Faktur Pajak resmi. Tanpa jeda waktu aktivasi.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment / Confirmation Modal */}
       {activeInvoice && (

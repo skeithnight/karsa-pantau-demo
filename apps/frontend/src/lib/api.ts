@@ -22,6 +22,9 @@ export function getAuthToken(): string | null {
 export function setAuthToken(token: string) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('karsa_token', token);
+    if (token !== 'demo-token') {
+      localStorage.removeItem('karsa_demo_mode');
+    }
     window.dispatchEvent(new Event('karsa_auth_change'));
   }
 }

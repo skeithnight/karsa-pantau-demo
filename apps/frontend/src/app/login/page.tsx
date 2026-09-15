@@ -45,6 +45,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email: loginEmail, password: loginPass }),
       });
       setAuthToken(res.accessToken);
+      localStorage.removeItem('karsa_demo_mode');
       localStorage.setItem('karsa_user', JSON.stringify(res.user));
       if (res.activeOrganization) {
         setActiveOrganization(res.activeOrganization);
