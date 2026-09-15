@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Sun,
   Layers,
   CheckCircle2,
   Shield,
@@ -25,6 +24,7 @@ import {
 } from 'lucide-react';
 import { getPendingOfflineEntries } from '../lib/offline/sync-queue';
 import { clearAuthToken, getActiveOrganization, setActiveOrganization } from '../lib/api';
+import { KarsaLogo } from './KarsaLogo';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -220,11 +220,7 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand Logo & Organization Switcher */}
         <div className="flex items-center space-x-3 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 shadow-md shadow-sky-500/20 shrink-0">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Sun className="w-5 h-5 text-amber-400 animate-pulse" />
-            </div>
-          </div>
+          <KarsaLogo size={36} className="shrink-0 drop-shadow-lg" />
           <div>
             <Link 
               href={currentUser ? "/projects" : "/"} 

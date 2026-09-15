@@ -1,9 +1,12 @@
 // Service Worker for Karsa Pantau PWA
-const CACHE_NAME = 'karsa-pantau-v1';
+const CACHE_NAME = 'karsa-pantau-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/favicon.ico',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

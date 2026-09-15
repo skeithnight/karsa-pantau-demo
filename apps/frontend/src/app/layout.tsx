@@ -6,6 +6,14 @@ import { Navigation } from '../components/Navigation';
 export const metadata = {
   title: 'Karsa Pantau — Sistem Manajemen Anggaran & Kontrol Realisasi Konstruksi (General EPC)',
   description: 'Platform Enterprise SaaS untuk RAB AHSP, Realisasi Biaya Lapangan, dan EVM Proyek Konstruksi Gedung, Infrastruktur, MEP, dan Energi Terbarukan.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

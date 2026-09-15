@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Sun, ArrowRight } from 'lucide-react';
+import { Sparkles, Loader2, ArrowRight } from 'lucide-react';
+import { KarsaLogo } from '@/components/KarsaLogo';
 import { apiRequest, setAuthToken, setActiveOrganization } from '@/lib/api';
 
 export default function DemoLauncherPage() {
@@ -82,11 +83,7 @@ export default function DemoLauncherPage() {
   return (
     <div className="min-h-[85vh] flex flex-col items-center justify-center px-4">
       <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-6 shadow-2xl">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 mx-auto shadow-lg shadow-sky-500/20">
-          <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-            <Sun className="w-7 h-7 text-amber-400 animate-pulse" />
-          </div>
-        </div>
+          <KarsaLogo size={56} className="mx-auto drop-shadow-xl" />
 
         <div>
           <h2 className="text-xl font-bold text-white flex items-center justify-center gap-2">

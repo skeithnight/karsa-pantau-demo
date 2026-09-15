@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sun, Shield, ArrowRight, Lock, Mail, UserCheck } from 'lucide-react';
+import { Shield, ArrowRight, Lock, Mail, UserCheck } from 'lucide-react';
+import { KarsaLogo } from '../../components/KarsaLogo';
 import { apiRequest, setAuthToken, setActiveOrganization } from '../../lib/api';
 import Link from 'next/link';
 
@@ -93,11 +94,7 @@ export default function LoginPage() {
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 mb-4 shadow-lg shadow-sky-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <Sun className="w-7 h-7 text-amber-400" />
-            </div>
-          </div>
+          <KarsaLogo size={56} className="mx-auto mb-4 drop-shadow-xl" />
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Karsa <span className="text-sky-400">Pantau</span>
           </h2>

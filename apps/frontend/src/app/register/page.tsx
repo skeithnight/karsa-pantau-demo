@@ -3,7 +3,8 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Sun, ArrowRight, ShieldCheck, Mail, Lock, User, Sparkles } from 'lucide-react';
+import { Building2, ArrowRight, ShieldCheck, Mail, Lock, User, Sparkles } from 'lucide-react';
+import { KarsaLogo } from '../../components/KarsaLogo';
 import { apiRequest, setAuthToken, setActiveOrganization } from '../../lib/api';
 
 function RegisterContent() {
@@ -61,11 +62,7 @@ function RegisterContent() {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 shadow-xl shadow-sky-500/20 mb-4">
-          <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-            <Sun className="w-6 h-6 text-amber-400" />
-          </div>
-        </div>
+          <KarsaLogo size={48} className="mx-auto mb-4 drop-shadow-xl" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Daftarkan Perusahaan Konstruksi & Kontraktor Anda
         </h2>
