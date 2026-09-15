@@ -31,7 +31,7 @@ interface TeamMember {
   projectAccess: string;
 }
 
-const initialMembers: TeamMember[] = [
+const DEMO_FALLBACK_MEMBERS: TeamMember[] = [
   {
     id: 'mem-1',
     name: 'Dwiki Nugraha (Anda)',
@@ -123,7 +123,8 @@ const roleConfig: Record<string, { label: string; color: string; desc: string }>
 
 export default function TeamManagementPage() {
   const [activeOrg, setActiveOrg] = useState<any>(null);
-  const [members, setMembers] = useState<TeamMember[]>(initialMembers);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
 
@@ -137,25 +138,73 @@ export default function TeamManagementPage() {
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const org = getActiveOrganization();
-    if (org) setActiveOrg(org);
+  const fetchMembers = async (org: any) => {
+    setLoading(true);
+    try {
+      const res = await apiRequest(`/organizations/${org.id}/members`);
+      if (Array.isArray(res) && res.length > 0) {
+        const mapped: TeamMember[] = res.map((m: any) => ({
+          id: m.id,
+          name: m.userName || m.name || m.userEmail?.split('@')[0],
+          email: m.userEmail || m.email,
+          role: m.role,
+          status: m.isActive ? 'active' : 'invited',
+          joinedAt: m.createdAt
+            ? new Date(m.createdAt).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'Aktif',
+          projectAccess: 'Semua Proyek',
+        }));
+        setMembers(mapped);
+        return;
+      }
+    } catch (err) {
+      console.warn('Gagal memuat anggota organisasi dari server:', err);
+    } finally {
+      setLoading(false);
+    }
 
-    // Load from local storage if available
-    const saved = localStorage.getItem('karsa_team_members');
-    if (saved) {
-      try {
-        setMembers(JSON.parse(saved));
-      } catch {
-        // no-op
+    // Hanya jika organisasi demo bawaan (karsa-solar) fallback ke demo members
+    if (org?.slug === 'karsa-solar') {
+      setMembers(DEMO_FALLBACK_MEMBERS);
+    } else {
+      // Akun produksi mandiri (seperti PT Cipta Daya Engineering)
+      const userStr = typeof window !== 'undefined' ? localStorage.getItem('karsa_user') : null;
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          setMembers([
+            {
+              id: u.id || 'mem-1',
+              name: `${u.name} (Anda)`,
+              email: u.email,
+              role: u.role || 'admin',
+              status: 'active',
+              joinedAt: 'Aktif',
+              projectAccess: 'Semua Proyek',
+            },
+          ]);
+        } catch {
+          setMembers([]);
+        }
+      } else {
+        setMembers([]);
       }
     }
-  }, []);
-
-  const saveMembersToStorage = (updated: TeamMember[]) => {
-    setMembers(updated);
-    localStorage.setItem('karsa_team_members', JSON.stringify(updated));
   };
+
+  useEffect(() => {
+    const org = getActiveOrganization();
+    if (org) {
+      setActiveOrg(org);
+      fetchMembers(org);
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,32 +229,27 @@ export default function TeamManagementPage() {
     setSaving(true);
     try {
       if (activeOrg?.id) {
-        try {
-          await apiRequest(`/organizations/${activeOrg.id}/members`, {
-            method: 'POST',
-            body: JSON.stringify({
-              name: formName.trim(),
-              email: formEmail.trim(),
-              role: formRole,
-            }),
-          });
-        } catch (apiErr: any) {
-          console.warn('API invite fallback to local session:', apiErr.message);
-        }
+        await apiRequest(`/organizations/${activeOrg.id}/members`, {
+          method: 'POST',
+          body: JSON.stringify({
+            name: formName.trim(),
+            email: formEmail.trim(),
+            role: formRole,
+          }),
+        });
+        await fetchMembers(activeOrg);
+      } else {
+        const newMember: TeamMember = {
+          id: `mem-${Date.now()}`,
+          name: formName.trim(),
+          email: formEmail.trim(),
+          role: formRole,
+          status: 'invited',
+          joinedAt: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+          projectAccess: formProjectAccess,
+        };
+        setMembers((prev) => [newMember, ...prev]);
       }
-
-      const newMember: TeamMember = {
-        id: `mem-${Date.now()}`,
-        name: formName.trim(),
-        email: formEmail.trim(),
-        role: formRole,
-        status: 'invited',
-        joinedAt: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-        projectAccess: formProjectAccess,
-      };
-
-      const updated = [newMember, ...members];
-      saveMembersToStorage(updated);
 
       setSuccessToast(`Undangan berhasil dikirim ke ${formEmail.trim()} sebagai ${roleConfig[formRole]?.label}.`);
       setIsModalOpen(false);
@@ -214,18 +258,34 @@ export default function TeamManagementPage() {
       setFormRole('estimator');
 
       setTimeout(() => setSuccessToast(null), 5000);
+    } catch (err: any) {
+      setFormError(err.message || 'Gagal menambahkan anggota ke organisasi.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleRemoveMember = (id: string, name: string) => {
-    if (id === 'mem-1') {
-      alert('Akun Administrator utama tidak dapat dihapus.');
+  const handleRemoveMember = async (id: string, name: string) => {
+    if (members.length <= 1) {
+      alert('Organisasi harus memiliki minimal 1 Administrator aktif.');
       return;
     }
-    const filtered = members.filter((m) => m.id !== id);
-    saveMembersToStorage(filtered);
+    if (!confirm(`Hapus akses untuk ${name} dari organisasi ${activeOrg?.name || ''}?`)) {
+      return;
+    }
+
+    if (activeOrg?.id) {
+      try {
+        await apiRequest(`/organizations/${activeOrg.id}/members/${id}`, {
+          method: 'DELETE',
+        });
+      } catch (err: any) {
+        console.warn('Gagal menghapus anggota dari server:', err.message);
+      }
+      await fetchMembers(activeOrg);
+    } else {
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+    }
     setSuccessToast(`Akses untuk ${name} telah dinonaktifkan.`);
     setTimeout(() => setSuccessToast(null), 4000);
   };
@@ -238,9 +298,15 @@ export default function TeamManagementPage() {
     return matchesSearch && matchesRole;
   });
 
-  const totalSeats = 15;
+  const totalSeats = activeOrg?.currentPlan?.toLowerCase().includes('starter')
+    ? 5
+    : activeOrg?.currentPlan?.toLowerCase().includes('trial')
+    ? 3
+    : activeOrg?.currentPlan?.toLowerCase().includes('enterprise')
+    ? 999
+    : 25;
   const usedSeats = members.length;
-  const remainingSeats = totalSeats - usedSeats;
+  const remainingSeats = Math.max(0, totalSeats - usedSeats);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">

@@ -65,14 +65,20 @@ export class RabService {
     };
   }
 
-  async findPendingApprovals() {
-    const res = await this.db.query(
-      `SELECT r.*, p.name as project_name, p.capacity_mw
-       FROM rab r
-       JOIN projects p ON p.id = r.project_id
-       WHERE r.status = 'submitted'
-       ORDER BY r.submitted_at ASC`,
-    );
+  async findPendingApprovals(organizationId?: string) {
+    let query = `
+      SELECT r.*, p.name as project_name, p.capacity_mw
+      FROM rab r
+      JOIN projects p ON p.id = r.project_id
+      WHERE r.status = 'submitted'
+    `;
+    const params: any[] = [];
+    if (organizationId) {
+      params.push(organizationId);
+      query += ` AND p.organization_id = $1`;
+    }
+    query += ` ORDER BY r.submitted_at ASC`;
+    const res = await this.db.query(query, params);
     return res.rows.map((row) => ({
       ...row,
       total_amount: parseFloat(row.total_amount),

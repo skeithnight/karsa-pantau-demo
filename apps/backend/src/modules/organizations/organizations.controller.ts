@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto, InviteMemberDto } from '@karsa/shared-types';
@@ -50,5 +50,17 @@ export class OrganizationsController {
     @Body() dto: InviteMemberDto,
   ) {
     return this.organizationsService.inviteMember(id, req.user.id, dto);
+  }
+
+  /**
+   * Menghapus atau menonaktifkan anggota tim dari organisasi
+   */
+  @Delete(':id/members/:memberId')
+  async removeMember(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.organizationsService.removeMember(id, req.user.id, memberId);
   }
 }

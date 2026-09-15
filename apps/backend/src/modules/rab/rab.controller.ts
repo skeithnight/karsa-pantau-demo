@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Request, Headers, Query } from '@nestjs/common';
 import { RabService } from './rab.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
@@ -22,8 +22,12 @@ export class RabController {
 
   @Get('rab/pending-approvals')
   @Roles(UserRole.APPROVER, UserRole.ADMIN)
-  findPendingApprovals() {
-    return this.rabService.findPendingApprovals();
+  findPendingApprovals(
+    @Headers('x-organization-id') orgHeader?: string,
+    @Query('organizationId') orgQuery?: string,
+  ) {
+    const orgId = orgHeader || orgQuery;
+    return this.rabService.findPendingApprovals(orgId);
   }
 
   @Post('projects/:id/rab')

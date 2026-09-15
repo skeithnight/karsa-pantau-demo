@@ -26,19 +26,7 @@ interface PendingRab {
 }
 
 export default function ApprovalsPage() {
-  const [pendingRabs, setPendingRabs] = useState<PendingRab[]>([
-    {
-      id: 'demo-rab-1',
-      project_id: 'demo-p1',
-      project_name: 'PLTS Cirata Terapung 50MW',
-      capacity_mw: 50.0,
-      version: 1,
-      total_amount: 45000000000,
-      notes: 'RAB Final Kontrak Engineering EPC',
-      submitted_at: new Date().toISOString(),
-    },
-  ]);
-
+  const [pendingRabs, setPendingRabs] = useState<PendingRab[]>([]);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -55,12 +43,10 @@ export default function ApprovalsPage() {
 
     apiRequest<PendingRab[]>('/rab/pending-approvals')
       .then((data) => {
-        if (data && data.length > 0) {
-          setPendingRabs(data);
-        }
+        setPendingRabs(Array.isArray(data) ? data : []);
       })
       .catch(() => {
-        // Fallback demo
+        setPendingRabs([]);
       })
       .finally(() => setLoading(false));
   }, [router]);

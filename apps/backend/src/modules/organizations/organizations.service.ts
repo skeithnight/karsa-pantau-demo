@@ -190,4 +190,24 @@ export class OrganizationsService {
       userName: dto.name || dto.email.split('@')[0],
     };
   }
+
+  /**
+   * Menghapus anggota tim dari organisasi
+   */
+  async removeMember(orgId: string, inviterId: string, memberId: string): Promise<{ success: boolean }> {
+    const inviterCheck = await this.db.query<any>(
+      `SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2 AND is_active = true`,
+      [orgId, inviterId],
+    );
+    if (inviterCheck.rows.length === 0 || inviterCheck.rows[0].role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Hanya Admin organisasi yang dapat menghapus anggota tim.');
+    }
+
+    await this.db.query(
+      `DELETE FROM organization_members WHERE organization_id = $1 AND id = $2`,
+      [orgId, memberId],
+    );
+
+    return { success: true };
+  }
 }

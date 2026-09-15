@@ -17,6 +17,8 @@ import {
   Users,
 } from 'lucide-react';
 
+import { apiRequest, getActiveOrganization } from '../../lib/api';
+
 interface JournalEntry {
   id: string;
   date: string;
@@ -28,6 +30,53 @@ interface JournalEntry {
   amount: number;
   paymentStatus: 'PAID' | 'PENDING_30D';
 }
+
+const CIPTA_DAYA_JOURNAL_ENTRIES: JournalEntry[] = [
+  {
+    id: 'tx-cd-001',
+    date: '2026-09-08',
+    invoiceNo: 'INV-ADH-9912',
+    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
+    vendor: 'PT Adhimix RMC Indonesia',
+    wbsCode: '1.1 Sipil Pondasi Gardu Beton K-300',
+    category: 'MATERIAL',
+    amount: 107250000,
+    paymentStatus: 'PAID',
+  },
+  {
+    id: 'tx-cd-002',
+    date: '2026-09-05',
+    invoiceNo: 'INV-TRF-8812',
+    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
+    vendor: 'PT Trafoindo Prima Perkasa',
+    wbsCode: '2.1 Trafo 2000 kVA 20kV/400V Unit 1',
+    category: 'EQUIPMENT',
+    amount: 680000000,
+    paymentStatus: 'PAID',
+  },
+  {
+    id: 'tx-cd-003',
+    date: '2026-09-03',
+    invoiceNo: 'INV-SC-2026/089',
+    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
+    vendor: 'PT Supreme Cable Manufacturing Tbk',
+    wbsCode: '2.4 Kabel LV NYY 4x300mm2 Termin 1',
+    category: 'MATERIAL',
+    amount: 624000000,
+    paymentStatus: 'PENDING_30D',
+  },
+  {
+    id: 'tx-cd-004',
+    date: '2026-08-28',
+    invoiceNo: 'KWT-LAB-01',
+    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
+    vendor: 'Mandor Borongan Listrik H. Sukirman',
+    wbsCode: '4.1 Upah Penarikan Kabel Bawah Tanah',
+    category: 'LABOR',
+    amount: 140000000,
+    paymentStatus: 'PAID',
+  },
+];
 
 const MOCK_JOURNAL_ENTRIES: JournalEntry[] = [
   {
@@ -101,8 +150,42 @@ const MOCK_JOURNAL_ENTRIES: JournalEntry[] = [
 export default function FinancePortalPage() {
   const [selectedProject, setSelectedProject] = useState<string>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [entries, setEntries] = useState<JournalEntry[]>(MOCK_JOURNAL_ENTRIES);
+  const [projectsList, setProjectsList] = useState<any[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [totalContract, setTotalContract] = useState<number>(0);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const org = getActiveOrganization();
+
+    async function loadFinanceData() {
+      try {
+        const res = await apiRequest('/projects');
+        const projs = res.data || [];
+        setProjectsList(projs);
+
+        const rabSum = projs.reduce((acc: number, p: any) => acc + (parseFloat(p.totalRab) || 0), 0);
+        setTotalContract(rabSum > 0 ? rabSum : 0);
+
+        if (org?.slug === 'cipta-daya-engineering') {
+          setEntries(CIPTA_DAYA_JOURNAL_ENTRIES);
+        } else if (org?.slug === 'karsa-solar') {
+          setEntries(MOCK_JOURNAL_ENTRIES);
+          setTotalContract(65951500000);
+        } else {
+          setEntries([]);
+        }
+      } catch (err) {
+        console.warn('Gagal memuat data keuangan:', err);
+        if (org?.slug === 'karsa-solar') {
+          setEntries(MOCK_JOURNAL_ENTRIES);
+          setTotalContract(65951500000);
+        }
+      }
+    }
+
+    loadFinanceData();
+  }, []);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -118,13 +201,13 @@ export default function FinancePortalPage() {
     return matchProj && matchCat;
   });
 
-  const totalContract = 65951500000; // Akumulasi Nilai Kontrak
   const totalActualCashOut = filteredEntries.reduce((acc, curr) => acc + curr.amount, 0);
   const totalAccountsPayable = filteredEntries
     .filter((e) => e.paymentStatus === 'PENDING_30D')
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const grossMargin = totalContract - totalActualCashOut;
-  const grossMarginPct = Math.round((grossMargin / totalContract) * 100);
+  const effectiveContract = totalContract > 0 ? totalContract : totalActualCashOut * 1.25;
+  const grossMargin = effectiveContract - totalActualCashOut;
+  const grossMarginPct = effectiveContract > 0 ? Math.round((grossMargin / effectiveContract) * 100) : 0;
 
   const handleExportCsv = () => {
     const headers = ['Tanggal', 'Nomor Bukti', 'Nama Proyek', 'Vendor / Penerima', 'Pos WBS', 'Kategori', 'Nominal (IDR)', 'Status Pembayaran'];
@@ -244,9 +327,11 @@ export default function FinancePortalPage() {
                 className="bg-transparent text-white font-medium focus:outline-none cursor-pointer"
               >
                 <option value="ALL" className="bg-slate-900">Semua Proyek</option>
-                <option value="Cikarang" className="bg-slate-900">Gedung Cikarang</option>
-                <option value="Cisumdawu" className="bg-slate-900">Jembatan Cisumdawu</option>
-                <option value="Cirata" className="bg-slate-900">PLTS Cirata</option>
+                {projectsList.map((p) => (
+                  <option key={p.id} value={p.name} className="bg-slate-900">
+                    {p.name}
+                  </option>
+                ))}
               </select>
             </div>
 
