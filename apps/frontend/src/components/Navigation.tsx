@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -13,7 +13,6 @@ import {
   Building2,
   ChevronDown,
   CreditCard,
-  Plus,
   Sparkles,
   BookOpen,
   DollarSign,
@@ -22,6 +21,7 @@ import {
   X,
   UserCheck,
   Database,
+  Settings,
 } from 'lucide-react';
 import { getPendingOfflineEntries } from '../lib/offline/sync-queue';
 import { clearAuthToken, getActiveOrganization, setActiveOrganization } from '../lib/api';
@@ -33,9 +33,26 @@ export function Navigation() {
   const [activeOrg, setActiveOrgState] = useState<any>(null);
   const [userOrgs, setUserOrgs] = useState<any[]>([]);
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+
+  const accountRef = useRef<HTMLDivElement>(null);
+  const orgRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
+        setShowAccountDropdown(false);
+      }
+      if (orgRef.current && !orgRef.current.contains(event.target as Node)) {
+        setShowOrgDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const userStr = localStorage.getItem('karsa_user');
@@ -46,7 +63,6 @@ export function Navigation() {
         // no-op
       }
     } else {
-      // Default demo user role
       const defaultUser = {
         id: 'usr-demo-admin',
         name: 'Dwiki Nugraha',
@@ -88,7 +104,7 @@ export function Navigation() {
     const updated = { ...currentUser, role: newRole };
     setCurrentUser(updated);
     localStorage.setItem('karsa_user', JSON.stringify(updated));
-    setShowRoleDropdown(false);
+    setShowAccountDropdown(false);
     setMobileMenuOpen(false);
   };
 
@@ -111,11 +127,11 @@ export function Navigation() {
 
   const role = (currentUser?.role || 'admin').toLowerCase();
 
-  // RBAC Navigation Links Matrix
-  const navItems = [
+  // Core Operational Navigation Links (Streamlined & Clean)
+  const coreNavItems = [
     {
       href: '/projects',
-      label: 'Portofolio Proyek',
+      label: 'Proyek',
       icon: Layers,
       color: 'text-sky-400',
       allowed: ['admin', 'pm', 'estimator', 'supervisor', 'mandor', 'finance', 'approver'],
@@ -136,38 +152,24 @@ export function Navigation() {
     },
     {
       href: '/finance',
-      label: 'Portal Keuangan',
+      label: 'Keuangan',
       icon: DollarSign,
       color: 'text-emerald-400',
       allowed: ['admin', 'pm', 'finance', 'approver'],
     },
     {
-      href: '/team',
-      label: 'Tim & Anggota',
-      icon: Users,
-      color: 'text-amber-400',
-      allowed: ['admin', 'pm'],
-    },
-    {
       href: '/docs',
       label: 'Dokumentasi',
       icon: BookOpen,
-      color: 'text-sky-400',
-      allowed: ['admin', 'pm', 'estimator', 'supervisor', 'mandor', 'finance', 'approver'],
-    },
-    {
-      href: '/settings/billing',
-      label: 'Langganan',
-      icon: CreditCard,
       color: 'text-amber-400',
-      allowed: ['admin', 'pm'],
+      allowed: ['admin', 'pm', 'estimator', 'supervisor', 'mandor', 'finance', 'approver'],
     },
   ];
 
-  const visibleNavItems = navItems.filter((item) => item.allowed.includes(role));
+  const visibleNavItems = coreNavItems.filter((item) => item.allowed.includes(role));
 
   const availableRoles = [
-    { key: 'admin', label: 'Administrator (Akses Penuh)', badgeColor: 'bg-rose-950 text-rose-300 border-rose-800' },
+    { key: 'admin', label: 'Administrator', badgeColor: 'bg-rose-950 text-rose-300 border-rose-800' },
     { key: 'pm', label: 'Project Manager (PM)', badgeColor: 'bg-purple-950 text-purple-300 border-purple-800' },
     { key: 'estimator', label: 'Estimator Biaya & RAB', badgeColor: 'bg-amber-950 text-amber-300 border-amber-800' },
     { key: 'supervisor', label: 'Site Supervisor / Mandor', badgeColor: 'bg-emerald-950 text-emerald-300 border-emerald-800' },
@@ -175,12 +177,21 @@ export function Navigation() {
     { key: 'approver', label: 'Owner / Approver', badgeColor: 'bg-teal-950 text-teal-300 border-teal-800' },
   ];
 
+  const userInitials = currentUser?.name
+    ? currentUser.name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'KP';
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo & Organization Switcher */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 shadow-lg shadow-sky-500/20 shrink-0">
+    <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Left: Brand Logo & Organization Switcher */}
+        <div className="flex items-center space-x-3 shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 p-0.5 shadow-md shadow-sky-500/20 shrink-0">
             <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
               <Sun className="w-5 h-5 text-amber-400 animate-pulse" />
             </div>
@@ -188,11 +199,11 @@ export function Navigation() {
           <div>
             <Link 
               href={currentUser ? "/projects" : "/"} 
-              className="text-lg font-bold tracking-tight text-white hover:text-sky-400 flex items-center gap-1.5"
+              className="text-base sm:text-lg font-bold tracking-tight text-white hover:text-sky-400 flex items-center gap-1.5 transition-colors"
             >
               <span>Karsa</span>
               <span className="text-sky-400">Pantau</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 uppercase font-mono">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-sky-950/90 text-sky-400 border border-sky-800/80 uppercase font-mono font-semibold">
                 SaaS
               </span>
             </Link>
@@ -200,14 +211,15 @@ export function Navigation() {
 
           {/* Organization Switcher Dropdown (Desktop) */}
           {currentUser && (
-            <div className="relative hidden lg:block pl-3 border-l border-slate-800">
+            <div ref={orgRef} className="relative hidden xl:block pl-3 border-l border-slate-800/80">
               <button
                 type="button"
                 onClick={() => setShowOrgDropdown(!showOrgDropdown)}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs text-slate-200 transition-all cursor-pointer"
+                title="Ganti Organisasi / Perusahaan"
               >
                 <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                <span className="font-medium max-w-[130px] truncate">
+                <span className="font-medium max-w-[120px] truncate">
                   {activeOrg?.name || 'Perusahaan'}
                 </span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 font-mono border border-sky-800/80">
@@ -217,9 +229,9 @@ export function Navigation() {
               </button>
 
               {showOrgDropdown && (
-                <div className="absolute left-3 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 p-2 space-y-1">
+                <div className="absolute left-3 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
                   <p className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 tracking-wider">
-                    Perusahaan Saya
+                    Perusahaan Aktif
                   </p>
                   {userOrgs.length > 0 ? (
                     userOrgs.map((o) => (
@@ -229,7 +241,7 @@ export function Navigation() {
                         onClick={() => handleSwitchOrg(o)}
                         className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
                           o.id === activeOrg?.id
-                            ? 'bg-sky-950 text-sky-300 font-semibold'
+                            ? 'bg-sky-950 text-sky-300 font-semibold border border-sky-800/60'
                             : 'text-slate-300 hover:bg-slate-800'
                         }`}
                       >
@@ -267,8 +279,8 @@ export function Navigation() {
           )}
         </div>
 
-        {/* Desktop Navigation Links (RBAC Filtered) */}
-        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+        {/* Center: Clean Operational Navigation Links */}
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5">
           {currentUser ? (
             visibleNavItems.map((item) => {
               const Icon = item.icon;
@@ -277,8 +289,6 @@ export function Navigation() {
                   ? pathname.startsWith('/projects')
                   : item.href === '/finance'
                   ? pathname.startsWith('/finance')
-                  : item.href === '/team'
-                  ? pathname.startsWith('/team')
                   : item.href === '/catalog'
                   ? pathname.startsWith('/catalog')
                   : pathname === item.href;
@@ -287,10 +297,10 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-slate-800 text-sky-400 border border-slate-700'
-                      : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                      ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30 shadow-sm shadow-sky-500/10'
+                      : 'text-slate-300 hover:bg-slate-900 hover:text-white border border-transparent'
                   }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${isActive ? item.color : 'text-slate-400'}`} />
@@ -302,20 +312,20 @@ export function Navigation() {
             <>
               <Link
                 href="/#features"
-                className="px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors"
               >
                 Fitur
               </Link>
               <Link
                 href="/#demo"
-                className="px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Demo</span>
               </Link>
               <Link
                 href="/docs"
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
                   pathname === '/docs'
                     ? 'bg-slate-800 text-sky-400 border border-slate-700'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
@@ -326,7 +336,7 @@ export function Navigation() {
               </Link>
               <Link
                 href="/pricing"
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   pathname === '/pricing'
                     ? 'bg-slate-800 text-sky-400 border border-slate-700'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
@@ -338,8 +348,8 @@ export function Navigation() {
           )}
         </nav>
 
-        {/* User Info, Role Switcher, Offline Badge & Mobile Toggle */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        {/* Right: Offline Indicator, Account Dropdown & Mobile Toggle */}
+        <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
           {pendingCount > 0 && (
             <div className="hidden sm:flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-amber-950/80 border border-amber-700/60 text-amber-300 animate-bounce">
               <WifiOff className="w-3 h-3" />
@@ -348,63 +358,125 @@ export function Navigation() {
           )}
 
           {currentUser ? (
-            <div className="flex items-center space-x-2 border-l border-slate-800 pl-2 sm:pl-3">
-              {/* Role Switcher Button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                  className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-right cursor-pointer flex items-center gap-1.5 transition-all"
-                  title="Klik untuk ganti peran (RBAC Demo)"
-                >
-                  <div className="text-right">
-                    <p className="text-[11px] font-semibold text-white hidden sm:block leading-tight">
+            /* Integrated Account & Settings Popover */
+            <div ref={accountRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowAccountDropdown(!showAccountDropdown)}
+                className="flex items-center gap-2 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition-all cursor-pointer shadow-sm group"
+                title="Menu Akun, Peran & Pengaturan"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                  {userInitials}
+                </div>
+                <div className="text-left hidden sm:block">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors">
                       {currentUser.name.split(' ')[0]}
-                    </p>
+                    </span>
                     <span className="text-[9px] px-1.5 py-0.2 rounded font-mono uppercase tracking-wider bg-sky-950 text-sky-400 border border-sky-800/80 flex items-center gap-0.5">
                       <Shield className="w-2.5 h-2.5" />
                       <span>{currentUser.role}</span>
                     </span>
                   </div>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </button>
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} />
+              </button>
 
-                {showRoleDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 p-2 space-y-1">
-                    <div className="px-2 py-1 border-b border-slate-800 mb-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              {/* Account & Settings Popover Content */}
+              {showAccountDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-3 space-y-3 animate-in fade-in zoom-in-95 duration-100">
+                  {/* User Profile Header */}
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-slate-800">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                      {userInitials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Company & Organization Context */}
+                  <div className="px-2.5 py-2 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                      <span className="text-slate-300 truncate font-medium">{activeOrg?.name}</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 font-mono border border-sky-800/80 shrink-0 font-bold">
+                      {activeOrg?.currentPlan?.includes('PRO') ? 'PRO' : 'STARTER'}
+                    </span>
+                  </div>
+
+                  {/* Organization & Team Quick Links */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-slate-500 px-1 tracking-wider">
+                      Pengaturan & Akun
+                    </p>
+                    <Link
+                      href="/team"
+                      onClick={() => setShowAccountDropdown(false)}
+                      className="w-full px-2.5 py-2 rounded-lg text-xs text-slate-200 hover:text-white hover:bg-slate-800 flex items-center justify-between transition-colors group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                        <span>Tim & Hak Akses</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500">Kelola</span>
+                    </Link>
+                    <Link
+                      href="/settings/billing"
+                      onClick={() => setShowAccountDropdown(false)}
+                      className="w-full px-2.5 py-2 rounded-lg text-xs text-slate-200 hover:text-white hover:bg-slate-800 flex items-center justify-between transition-colors group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-3.5 h-3.5 text-sky-400 group-hover:scale-110 transition-transform" />
+                        <span>Paket & Billing</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500">Upgrade</span>
+                    </Link>
+                  </div>
+
+                  {/* RBAC Role Switcher Section */}
+                  <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between px-1">
+                      <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
                         Ganti Peran Aktif (RBAC)
                       </p>
-                      <p className="text-[9px] text-slate-500">
-                        Ubah peran untuk menguji perbedaan menu & hak akses.
-                      </p>
+                      <span className="text-[9px] text-sky-400 font-mono">Demo Mode</span>
                     </div>
-                    {availableRoles.map((r) => (
-                      <button
-                        key={r.key}
-                        type="button"
-                        onClick={() => handleSwitchRole(r.key)}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                          role === r.key
-                            ? 'bg-sky-950 text-sky-300 font-semibold'
-                            : 'text-slate-300 hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="truncate">{r.label}</span>
-                        {role === r.key && <UserCheck className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
-                      </button>
-                    ))}
+                    <div className="grid grid-cols-2 gap-1">
+                      {availableRoles.map((r) => (
+                        <button
+                          key={r.key}
+                          type="button"
+                          onClick={() => handleSwitchRole(r.key)}
+                          className={`px-2 py-1.5 rounded-lg text-[11px] text-left truncate transition-all flex items-center justify-between ${
+                            role === r.key
+                              ? 'bg-sky-950 text-sky-300 font-bold border border-sky-800 shadow-sm'
+                              : 'bg-slate-950/60 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80'
+                          }`}
+                        >
+                          <span className="truncate">{r.label.split(' ')[0]}</span>
+                          {role === r.key && <UserCheck className="w-3 h-3 text-sky-400 shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
-              </div>
 
-              <button
-                onClick={handleLogout}
-                title="Logout"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-900 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+                  {/* Logout Button */}
+                  <div className="pt-2 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full px-2.5 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 flex items-center gap-2 transition-colors font-medium cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Keluar dari Akun</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -438,9 +510,9 @@ export function Navigation() {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 px-4 py-4 space-y-3 animate-fade-in shadow-2xl">
+        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 px-4 py-4 space-y-4 animate-in slide-in-from-top-2 duration-150 shadow-2xl">
           {currentUser && (
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 mb-2">
+            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-white">{currentUser.name}</p>
@@ -457,9 +529,10 @@ export function Navigation() {
             </div>
           )}
 
+          {/* Operational Links */}
           <div className="space-y-1">
             <p className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 tracking-wider">
-              Menu Navigasi ({role.toUpperCase()})
+              Menu Operasional Proyek
             </p>
             {currentUser ? (
               visibleNavItems.map((item) => {
@@ -469,8 +542,6 @@ export function Navigation() {
                     ? pathname.startsWith('/projects')
                     : item.href === '/finance'
                     ? pathname.startsWith('/finance')
-                    : item.href === '/team'
-                    ? pathname.startsWith('/team')
                     : item.href === '/catalog'
                     ? pathname.startsWith('/catalog')
                     : pathname === item.href;
@@ -482,7 +553,7 @@ export function Navigation() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`w-full px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5 transition-colors ${
                       isActive
-                        ? 'bg-slate-800 text-sky-400 border border-slate-700'
+                        ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
                         : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                     }`}
                   >
@@ -525,9 +596,34 @@ export function Navigation() {
             )}
           </div>
 
-          {/* Quick Role Switcher on Mobile */}
+          {/* Account & Organization Links in Mobile Drawer */}
           {currentUser && (
             <div className="pt-2 border-t border-slate-800 space-y-1">
+              <p className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 tracking-wider">
+                Pengaturan Perusahaan & Akun
+              </p>
+              <Link
+                href="/team"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-900 hover:text-white flex items-center gap-2 transition-colors"
+              >
+                <Users className="w-4 h-4 text-amber-400" />
+                <span>Tim & Hak Akses Anggota</span>
+              </Link>
+              <Link
+                href="/settings/billing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-900 hover:text-white flex items-center gap-2 transition-colors"
+              >
+                <CreditCard className="w-4 h-4 text-sky-400" />
+                <span>Paket Langganan & Billing</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Quick Role Switcher in Mobile Drawer */}
+          {currentUser && (
+            <div className="pt-2 border-t border-slate-800 space-y-1.5">
               <p className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 tracking-wider">
                 Ganti Peran Uji Coba (RBAC Switcher)
               </p>
@@ -537,15 +633,27 @@ export function Navigation() {
                     key={r.key}
                     type="button"
                     onClick={() => handleSwitchRole(r.key)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11px] text-left truncate transition-colors ${
+                    className={`px-2.5 py-2 rounded-lg text-[11px] text-left truncate transition-colors flex items-center justify-between ${
                       role === r.key
                         ? 'bg-sky-950 text-sky-300 font-bold border border-sky-800'
                         : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
                     }`}
                   >
-                    {r.key.toUpperCase()}
+                    <span>{r.label.split(' ')[0]}</span>
+                    {role === r.key && <UserCheck className="w-3 h-3 text-sky-400 shrink-0" />}
                   </button>
                 ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-950/40 flex items-center gap-2 font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Keluar dari Akun</span>
+                </button>
               </div>
             </div>
           )}
@@ -554,3 +662,4 @@ export function Navigation() {
     </header>
   );
 }
+
