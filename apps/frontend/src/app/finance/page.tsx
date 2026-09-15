@@ -31,53 +31,6 @@ interface JournalEntry {
   paymentStatus: 'PAID' | 'PENDING_30D';
 }
 
-const CIPTA_DAYA_JOURNAL_ENTRIES: JournalEntry[] = [
-  {
-    id: 'tx-cd-001',
-    date: '2026-09-08',
-    invoiceNo: 'INV-ADH-9912',
-    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
-    vendor: 'PT Adhimix RMC Indonesia',
-    wbsCode: '1.1 Sipil Pondasi Gardu Beton K-300',
-    category: 'MATERIAL',
-    amount: 107250000,
-    paymentStatus: 'PAID',
-  },
-  {
-    id: 'tx-cd-002',
-    date: '2026-09-05',
-    invoiceNo: 'INV-TRF-8812',
-    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
-    vendor: 'PT Trafoindo Prima Perkasa',
-    wbsCode: '2.1 Trafo 2000 kVA 20kV/400V Unit 1',
-    category: 'EQUIPMENT',
-    amount: 680000000,
-    paymentStatus: 'PAID',
-  },
-  {
-    id: 'tx-cd-003',
-    date: '2026-09-03',
-    invoiceNo: 'INV-SC-2026/089',
-    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
-    vendor: 'PT Supreme Cable Manufacturing Tbk',
-    wbsCode: '2.4 Kabel LV NYY 4x300mm2 Termin 1',
-    category: 'MATERIAL',
-    amount: 624000000,
-    paymentStatus: 'PENDING_30D',
-  },
-  {
-    id: 'tx-cd-004',
-    date: '2026-08-28',
-    invoiceNo: 'KWT-LAB-01',
-    projectName: 'EPC Gardu Distribusi & Sistem Kelistrikan Pabrik Karawang',
-    vendor: 'Mandor Borongan Listrik H. Sukirman',
-    wbsCode: '4.1 Upah Penarikan Kabel Bawah Tanah',
-    category: 'LABOR',
-    amount: 140000000,
-    paymentStatus: 'PAID',
-  },
-];
-
 const MOCK_JOURNAL_ENTRIES: JournalEntry[] = [
   {
     id: 'tx-001',
@@ -118,31 +71,42 @@ const MOCK_JOURNAL_ENTRIES: JournalEntry[] = [
     invoiceNo: 'INV-CRN-018',
     projectName: 'Pekerjaan Struktur & Jembatan Tol Cisumdawu',
     vendor: 'PT Daya Rental Alat Berat',
-    wbsCode: '3.1 Sewa Mobile Crane 50 Ton',
+    wbsCode: '1.2 Sewa Mobile Crane 50 Ton (2 Minggu)',
     category: 'EQUIPMENT',
     amount: 85000000,
-    paymentStatus: 'PENDING_30D',
+    paymentStatus: 'PAID',
   },
   {
     id: 'tx-005',
     date: '2026-09-01',
-    invoiceNo: 'KWT-PILING-02',
+    invoiceNo: 'KWT-SB-004',
     projectName: 'Pekerjaan Struktur & Jembatan Tol Cisumdawu',
-    vendor: 'PT Pondasi Pancang Perkasa',
-    wbsCode: '2.2 Borongan Bored Pile Titik 1-12',
+    vendor: 'CV Mandiri Subkon Bored Pile',
+    wbsCode: '1.1 Pekerjaan Pondasi Bored Pile Titik P-12',
     category: 'SUBCON',
-    amount: 340000000,
-    paymentStatus: 'PAID',
+    amount: 195000000,
+    paymentStatus: 'PENDING_30D',
   },
   {
     id: 'tx-006',
     date: '2026-08-28',
-    invoiceNo: 'INV-SOLAR-099',
+    invoiceNo: 'INV-PV-901',
     projectName: 'PLTS Cirata Terapung 50MW / Energi Terbarukan',
-    vendor: 'Longi Solar Global Direct',
-    wbsCode: '1.1 Modul PV Tier-1 550Wp Batch-1',
+    vendor: 'PT Surya Panel Global',
+    wbsCode: '2.1 Pengadaan Modul Surya 550Wp Batch 1',
     category: 'MATERIAL',
-    amount: 4850000000,
+    amount: 4500000000,
+    paymentStatus: 'PAID',
+  },
+  {
+    id: 'tx-007',
+    date: '2026-08-25',
+    invoiceNo: 'INV-INV-332',
+    projectName: 'PLTS Cirata Terapung 50MW / Energi Terbarukan',
+    vendor: 'PT Power Inverter Indonesia',
+    wbsCode: '2.3 Central Inverter 2.5MW Unit 1',
+    category: 'EQUIPMENT',
+    amount: 500000000,
     paymentStatus: 'PAID',
   },
 ];
@@ -167,9 +131,7 @@ export default function FinancePortalPage() {
         const rabSum = projs.reduce((acc: number, p: any) => acc + (parseFloat(p.totalRab) || 0), 0);
         setTotalContract(rabSum > 0 ? rabSum : 0);
 
-        if (org?.slug === 'cipta-daya-engineering') {
-          setEntries(CIPTA_DAYA_JOURNAL_ENTRIES);
-        } else if (org?.slug === 'karsa-solar') {
+        if (org?.slug === 'karsa-solar') {
           setEntries(MOCK_JOURNAL_ENTRIES);
           setTotalContract(65951500000);
         } else {
@@ -180,6 +142,8 @@ export default function FinancePortalPage() {
         if (org?.slug === 'karsa-solar') {
           setEntries(MOCK_JOURNAL_ENTRIES);
           setTotalContract(65951500000);
+        } else {
+          setEntries([]);
         }
       }
     }
@@ -205,8 +169,8 @@ export default function FinancePortalPage() {
   const totalAccountsPayable = filteredEntries
     .filter((e) => e.paymentStatus === 'PENDING_30D')
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const effectiveContract = totalContract > 0 ? totalContract : totalActualCashOut * 1.25;
-  const grossMargin = effectiveContract - totalActualCashOut;
+  const effectiveContract = totalContract > 0 ? totalContract : (totalActualCashOut > 0 ? totalActualCashOut * 1.25 : 0);
+  const grossMargin = effectiveContract > 0 ? effectiveContract - totalActualCashOut : 0;
   const grossMarginPct = effectiveContract > 0 ? Math.round((grossMargin / effectiveContract) * 100) : 0;
 
   const handleExportCsv = () => {
@@ -368,8 +332,19 @@ export default function FinancePortalPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {filteredEntries.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-900/50 transition-colors">
+              {filteredEntries.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center text-slate-400">
+                    <Receipt className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-slate-300">Belum Ada Catatan Transaksi</p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                      Belum ada pencatatan pengeluaran riil atau invoice vendor untuk proyek di organisasi ini.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredEntries.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-900/50 transition-colors">
                   <td className="py-3 px-3 font-mono text-slate-400 whitespace-nowrap">{row.date}</td>
                   <td className="py-3 px-3 font-mono text-sky-400 font-semibold">{row.invoiceNo}</td>
                   <td className="py-3 px-3 text-slate-200 font-medium max-w-[200px] truncate">{row.projectName}</td>
@@ -407,7 +382,7 @@ export default function FinancePortalPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

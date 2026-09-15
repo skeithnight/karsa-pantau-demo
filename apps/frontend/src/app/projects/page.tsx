@@ -19,7 +19,7 @@ import {
   DollarSign,
   Calendar,
 } from 'lucide-react';
-import { apiRequest, getAuthToken } from '../../lib/api';
+import { apiRequest, getAuthToken, getActiveOrganization } from '../../lib/api';
 
 interface Project {
   id: string;
@@ -37,15 +37,15 @@ interface Project {
 
 const DEFAULT_DEMO_PROJECTS: Project[] = [
   {
-    id: 'de300000-0000-0000-0000-000000000500',
-    name: 'Pembangunan Gedung Fasilitas & MEP Cikarang (Demo)',
-    location: 'Kawasan Industri GIIC Cikarang, Jawa Barat',
-    category: 'Gedung & MEP Industri',
+    id: 'demo-p1',
+    name: 'Pembangunan Gedung Fasilitas & MEP Cikarang',
+    location: 'Cikarang, Jawa Barat',
+    category: 'Gedung & Komersial',
     status: 'ongoing',
-    totalRab: 2451500000,
-    totalActual: 1499800000,
-    variancePct: -38.8,
-    physicalProgressPct: 74,
+    totalRab: 2450000000,
+    totalActual: 2300000000,
+    variancePct: 6.5,
+    physicalProgressPct: 78.5,
     createdAt: new Date().toISOString(),
   },
   {
@@ -77,7 +77,7 @@ const DEFAULT_DEMO_PROJECTS: Project[] = [
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>(DEFAULT_DEMO_PROJECTS);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Create Project Modal State
@@ -101,14 +101,27 @@ export default function ProjectsPage() {
       return;
     }
 
+    const org = getActiveOrganization();
+    const isDemo = typeof window !== 'undefined' && localStorage.getItem('karsa_demo_mode') === 'true';
+
     apiRequest<{ data: Project[] }>('/projects')
       .then((res) => {
-        if (res && res.data && res.data.length > 0) {
-          setProjects(res.data);
+        if (res && Array.isArray(res.data)) {
+          if (res.data.length > 0) {
+            setProjects(res.data);
+          } else if (org?.slug === 'karsa-solar' || isDemo) {
+            setProjects(DEFAULT_DEMO_PROJECTS);
+          } else {
+            setProjects([]);
+          }
         }
       })
       .catch(() => {
-        // Gunakan demo data jika backend belum terhubung
+        if (org?.slug === 'karsa-solar' || isDemo) {
+          setProjects(DEFAULT_DEMO_PROJECTS);
+        } else {
+          setProjects([]);
+        }
       })
       .finally(() => setLoading(false));
   }, [router]);
@@ -241,98 +254,125 @@ export default function ProjectsPage() {
       )}
 
       {/* Grid Proyek */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {projects.map((proj) => {
-          const isOverbudget = proj.variancePct > 0;
-          return (
-            <div
-              key={proj.id}
-              className="glass-card glass-card-hover rounded-2xl p-6 border border-slate-800 flex flex-col justify-between"
-            >
-              <div>
-                {/* Status & Sektor */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">
-                    <Building2 className="w-3.5 h-3.5 text-sky-400" />
-                    {proj.category || (proj.capacityMw ? `${proj.capacityMw} MWp` : 'EPC & Konstruksi')}
-                  </span>
+      {loading ? (
+        <div className="flex items-center justify-center p-20">
+          <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="glass-card rounded-2xl p-12 border border-slate-800 text-center flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Belum Ada Proyek Aktif</h3>
+          <p className="text-sm text-slate-400 max-w-md mb-6">
+            Organisasi Anda belum memiliki proyek konstruksi terdaftar. Mulai kelola pagu anggaran, WBS, Kurva S, dan approval dengan membuat proyek pertama Anda.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setFormError(null);
+              setShowCreateModal(true);
+            }}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Proyek Pertama</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {projects.map((proj) => {
+            const isOverbudget = proj.variancePct > 0;
+            return (
+              <div
+                key={proj.id}
+                className="glass-card glass-card-hover rounded-2xl p-6 border border-slate-800 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Status & Sektor */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                      <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                      {proj.category || (proj.capacityMw ? `${proj.capacityMw} MWp` : 'EPC & Konstruksi')}
+                    </span>
 
-                  <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
-                      proj.status === 'ongoing'
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                        : proj.status === 'completed'
-                        ? 'bg-sky-950 text-sky-300 border border-sky-800'
-                        : 'bg-amber-950 text-amber-300 border border-amber-800'
-                    }`}
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
+                        proj.status === 'ongoing'
+                          ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                          : proj.status === 'completed'
+                          ? 'bg-sky-950 text-sky-300 border border-sky-800'
+                          : 'bg-amber-950 text-amber-300 border border-amber-800'
+                      }`}
+                    >
+                      {proj.status}
+                    </span>
+                  </div>
+
+                  {/* Nama & Lokasi Proyek */}
+                  <h3 className="text-lg font-bold text-white mb-1.5">{proj.name}</h3>
+                  <p className="text-xs text-slate-400 flex items-center gap-1.5 mb-5">
+                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                    {proj.location}
+                  </p>
+
+                  {/* Metrik Finansial */}
+                  <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-900/60 border border-slate-800 mb-5">
+                    <div>
+                      <span className="text-[11px] text-slate-400 block uppercase font-medium">Pagu Anggaran RAB</span>
+                      <span className="text-sm font-bold text-white font-mono">{formatRupiah(proj.totalRab)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-slate-400 block uppercase font-medium">Realisasi Lapangan</span>
+                      <span className="text-sm font-bold text-emerald-400 font-mono">
+                        {formatRupiah(proj.totalActual)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5 mb-5">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium">
+                      <span>Progres Fisik Aktual</span>
+                      <span className="text-sky-400 font-bold">{proj.physicalProgressPct}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-sky-500 to-emerald-400 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(proj.physicalProgressPct, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Card */}
+                <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    {isOverbudget ? (
+                      <span className="text-xs text-rose-400 font-semibold flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        +{proj.variancePct}% Overbudget
+                      </span>
+                    ) : (
+                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        {proj.variancePct}% On Track
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/projects/${proj.id}`}
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-white transition-colors border border-slate-700"
                   >
-                    {proj.status}
-                  </span>
-                </div>
-
-                {/* Nama & Lokasi Proyek */}
-                <h3 className="text-lg font-bold text-white mb-1.5">{proj.name}</h3>
-                <p className="text-xs text-slate-400 flex items-center gap-1.5 mb-5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  {proj.location}
-                </p>
-
-                {/* Metrik Finansial */}
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-900/60 border border-slate-800 mb-5">
-                  <div>
-                    <span className="text-[11px] text-slate-400 block uppercase font-medium">Pagu Anggaran RAB</span>
-                    <span className="text-sm font-bold text-white font-mono">{formatRupiah(proj.totalRab)}</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-slate-400 block uppercase font-medium">Realisasi Lapangan</span>
-                    <span className="text-sm font-bold text-emerald-400 font-mono">
-                      {formatRupiah(proj.totalActual)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1.5 mb-5">
-                  <div className="flex justify-between text-xs text-slate-400 font-medium">
-                    <span>Progres Fisik Aktual</span>
-                    <span className="text-sky-400 font-bold">{proj.physicalProgressPct}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-sky-500 to-emerald-400 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(proj.physicalProgressPct, 100)}%` }}
-                    />
-                  </div>
+                    Buka Dashboard &rarr;
+                  </Link>
                 </div>
               </div>
-
-              {/* Footer Card */}
-              <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  {isOverbudget ? (
-                    <span className="text-xs text-rose-400 font-semibold flex items-center gap-1">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      +{proj.variancePct}% Overbudget
-                    </span>
-                  ) : (
-                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      {proj.variancePct}% On Track
-                    </span>
-                  )}
-                </div>
-
-                <Link
-                  href={`/projects/${proj.id}`}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-white transition-colors border border-slate-700"
-                >
-                  Buka Dashboard &rarr;
-                </Link>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Modal Form Tambah Proyek Baru */}
       {showCreateModal && (
