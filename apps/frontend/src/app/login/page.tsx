@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sun, Shield, ArrowRight, Lock, Mail, UserCheck } from 'lucide-react';
 import { apiRequest, setAuthToken, setActiveOrganization } from '../../lib/api';
@@ -21,6 +21,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getRedirectUrl = () => {
+    if (typeof window === 'undefined') return '/projects';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('redirect') || '/projects';
+  };
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('karsa_token') : null;
+    const user = typeof window !== 'undefined' ? localStorage.getItem('karsa_user') : null;
+    if (token && user) {
+      router.replace(getRedirectUrl());
+    }
+  }, [router]);
+
   const handleLogin = async (loginEmail = email, loginPass = password) => {
     setLoading(true);
     setError(null);
@@ -37,7 +51,8 @@ export default function LoginPage() {
       if (res.organizations) {
         localStorage.setItem('karsa_user_orgs', JSON.stringify(res.organizations));
       }
-      router.push('/projects');
+      window.dispatchEvent(new Event('karsa_auth_change'));
+      router.push(getRedirectUrl());
     } catch (err) {
       // Fallback untuk demo jika backend belum running
       const matched = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === loginEmail.toLowerCase());
@@ -60,7 +75,8 @@ export default function LoginPage() {
                     : 'admin',
           }),
         );
-        router.push('/projects');
+        window.dispatchEvent(new Event('karsa_auth_change'));
+        router.push(getRedirectUrl());
       } else {
         setError((err as Error).message || 'Gagal login, periksa email & password.');
       }

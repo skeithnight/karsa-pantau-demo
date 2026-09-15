@@ -54,50 +54,74 @@ export function Navigation() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
+  const PROTECTED_PREFIXES = [
+    '/projects',
+    '/approvals',
+    '/catalog',
+    '/finance',
+    '/team',
+    '/settings',
+  ];
+
+  const syncAuthState = () => {
+    if (typeof window === 'undefined') return;
+    const token = localStorage.getItem('karsa_token');
     const userStr = localStorage.getItem('karsa_user');
-    if (userStr) {
+
+    if (token && userStr) {
       try {
         setCurrentUser(JSON.parse(userStr));
       } catch {
-        // no-op
+        setCurrentUser(null);
+      }
+      const org = getActiveOrganization();
+      if (org) {
+        setActiveOrgState(org);
+      } else {
+        setActiveOrgState(null);
+      }
+      const orgsStr = localStorage.getItem('karsa_user_orgs');
+      if (orgsStr) {
+        try {
+          setUserOrgs(JSON.parse(orgsStr));
+        } catch {
+          setUserOrgs([]);
+        }
       }
     } else {
-      const defaultUser = {
-        id: 'usr-demo-admin',
-        name: 'Dwiki Nugraha',
-        email: 'dwiki@karsapantau.id',
-        role: 'admin',
-      };
-      setCurrentUser(defaultUser);
-      localStorage.setItem('karsa_user', JSON.stringify(defaultUser));
-    }
+      // User is completely logged out
+      setCurrentUser(null);
+      setActiveOrgState(null);
+      setUserOrgs([]);
 
-    const org = getActiveOrganization();
-    if (org) {
-      setActiveOrgState(org);
-    } else {
-      setActiveOrgState({
-        id: '1a2b3c4d-org1-4a2b-971a-03b05cfc5a01',
-        name: 'PT Karsa Konstruksi Nusantara',
-        currentPlan: 'PRO (Trial)',
-      });
-    }
-
-    const orgsStr = localStorage.getItem('karsa_user_orgs');
-    if (orgsStr) {
-      try {
-        setUserOrgs(JSON.parse(orgsStr));
-      } catch {
-        // no-op
+      // Route Guard: If attempting to access a protected dashboard route, bounce to /login
+      const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+      if (isProtected) {
+        router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       }
     }
+  };
+
+  useEffect(() => {
+    syncAuthState();
+
+    const handleAuthChange = () => {
+      syncAuthState();
+    };
+
+    window.addEventListener('karsa_auth_change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
 
     // Check offline entries
     getPendingOfflineEntries().then((entries) => {
       setPendingCount(entries.length);
     });
-  }, [pathname]);
+
+    return () => {
+      window.removeEventListener('karsa_auth_change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, [pathname, router]);
 
   const handleSwitchRole = (newRole: string) => {
     if (!currentUser) return;
@@ -118,6 +142,11 @@ export function Navigation() {
   const handleLogout = () => {
     clearAuthToken();
     setCurrentUser(null);
+    setActiveOrgState(null);
+    setUserOrgs([]);
+    setShowAccountDropdown(false);
+    setShowOrgDropdown(false);
+    setMobileMenuOpen(false);
     router.push('/login');
   };
 
