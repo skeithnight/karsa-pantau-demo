@@ -309,7 +309,7 @@ export function Navigation() {
         </div>
 
         {/* Center: Clean Operational Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5">
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5 shrink-0">
           {currentUser ? (
             visibleNavItems.map((item) => {
               const Icon = item.icon;
@@ -326,14 +326,14 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     isActive
                       ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30 shadow-sm shadow-sky-500/10'
                       : 'text-slate-300 hover:bg-slate-900 hover:text-white border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? item.color : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? item.color : 'text-slate-400'} shrink-0`} />
+                  <span className="whitespace-nowrap">{item.label}</span>
                 </Link>
               );
             })
@@ -341,31 +341,31 @@ export function Navigation() {
             <>
               <Link
                 href="/#features"
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors whitespace-nowrap shrink-0"
               >
                 Fitur
               </Link>
               <Link
                 href="/#demo"
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-colors flex items-center gap-1 whitespace-nowrap shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>Demo</span>
               </Link>
               <Link
                 href="/docs"
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap shrink-0 ${
                   pathname === '/docs'
                     ? 'bg-slate-800 text-sky-400 border border-slate-700'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`}
               >
-                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+                <BookOpen className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                 <span>Dokumentasi</span>
               </Link>
               <Link
                 href="/pricing"
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
                   pathname === '/pricing'
                     ? 'bg-slate-800 text-sky-400 border border-slate-700'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
