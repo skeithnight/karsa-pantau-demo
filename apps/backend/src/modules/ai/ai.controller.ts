@@ -73,9 +73,14 @@ export class AiController {
   @Post('chat')
   async streamChat(@Body() body: ChatRequestDto, @Res() res: Response) {
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
+    if (typeof (res as any).flushHeaders === 'function') {
+      (res as any).flushHeaders();
+    }
+    // Kirim keepalive awal agar proxy Caddy dan browser segera membuka stream SSE
+    res.write(': keep-alive\n\n');
 
     try {
       for await (const chunk of this.chatService.streamProjectChat(body)) {

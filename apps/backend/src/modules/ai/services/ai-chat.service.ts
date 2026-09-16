@@ -66,14 +66,14 @@ Informasi Proyek:
     // 2. Susun system prompt dengan guardrail RAG
     const systemPrompt = `
 Kamu adalah Karsa AI Assistant — asisten cerdas untuk estimasi, monitoring, dan cost-control proyek konstruksi PLTS (Pembangkit Listrik Tenaga Surya).
-Jawab pertanyaan pengguna dalam bahasa Indonesia yang ringkas, ramah, dan profesional.
+Jawab pertanyaan pengguna dalam bahasa Indonesia yang ringkas, jelas, to the point, dan profesional (maksimal 3 paragraf).
 
 Konteks Proyek Terkait:
-${projectContext || 'Data proyek tidak tersedia secara spesifik.'}
+${projectContext || 'Data proyek tidak tersedia secara spesifik atau proyek baru belum memiliki rincian transaksi.'}
 
 Prinsip Penting:
-1. Hanya gunakan fakta atau angka yang tercantum di Konteks Proyek di atas.
-2. Jika ada informasi finansial/teknis yang tidak ada di konteks, katakan dengan jujur bahwa data tersebut belum tercatat di sistem Karsa Pantau. Jangan pernah mengarang data biaya atau progres.
+1. Gunakan fakta atau angka yang tercantum di Konteks Proyek di atas bila relevan.
+2. Jika ada informasi finansial/teknis yang belum tercatat di sistem, sampaikan dengan jelas dan berikan arahan atau rekomendasi standar industri EPC PLTS. Jangan pernah mengarang angka realisasi atau RAB yang tidak ada.
 3. Selalu prioritaskan kepatuhan anggaran dan efisiensi pengeluaran.
     `.trim();
 
@@ -85,17 +85,33 @@ Prinsip Penting:
 
     let fullResponse = '';
 
-    // 3. Streaming response via 9Router
+    // 3. Streaming response via 9Router (dengan non-streaming fallback)
     try {
-      for await (const chunk of this.nineRouter.streamChat(messages)) {
+      for await (const chunk of this.nineRouter.streamChat(messages, { maxTokens: 800, temperature: 0.3 })) {
         fullResponse += chunk;
         yield chunk;
       }
     } catch (err: any) {
-      this.logger.warn(`Streaming AI gagal, fallback respons: ${err.message}`);
-      const fallbackText = `[Mode Offline] Maaf, layanan asisten AI sedang tidak dapat dijangkau saat ini. Berdasarkan data lokal sistem, proyek memiliki Total Anggaran Rp ${projectContext ? 'yang tercatat di dashboard' : '-'} dengan realisasi berjalan.`;
-      fullResponse = fallbackText;
-      yield fallbackText;
+      this.logger.warn(`Streaming AI gagal (${err.message}), mencoba fallback non-streaming...`);
+      try {
+        const nonStreamRes = await this.nineRouter.createChatCompletion(messages, {
+          maxTokens: 600,
+          temperature: 0.3,
+        });
+        if (nonStreamRes && nonStreamRes.content) {
+          fullResponse = nonStreamRes.content;
+          yield nonStreamRes.content;
+        } else {
+          throw new Error('Respons non-streaming kosong');
+        }
+      } catch (nonStreamErr: any) {
+        this.logger.warn(`Non-streaming fallback juga gagal: ${nonStreamErr.message}`);
+        const fallbackText = projectContext
+          ? `Maaf, respons AI real-time membutuhkan waktu lebih lama dari biasanya. Berdasarkan data sistem Karsa Pantau saat ini:\n\n${projectContext}\n\nSilakan ajukan pertanyaan kembali atau periksa detail Kurva S pada menu Proyek.`
+          : `Maaf, layanan asisten AI sedang mengalami antrean pemrosesan server. Rincian anggaran dan progres dapat Anda pantau langsung melalui menu Proyek & Keuangan. Silakan coba beberapa saat lagi.`;
+        fullResponse = fallbackText;
+        yield fallbackText;
+      }
     }
 
     // 4. Catat output ke ai_insights

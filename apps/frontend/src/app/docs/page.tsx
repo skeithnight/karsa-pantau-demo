@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getAuthToken, getActiveOrganization } from '@/lib/api';
 import {
   BookOpen,
   Sparkles,
@@ -40,6 +41,19 @@ export default function DocumentationPage() {
   const [activeTab, setActiveTab] = useState<
     'video' | 'estimator' | 'field' | 'pm' | 'finance' | 'owner' | 'faq'
   >('video');
+  const [isProductionUser, setIsProductionUser] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = getAuthToken();
+      const org = getActiveOrganization();
+      const isDemoMode = localStorage.getItem('karsa_demo_mode') === 'true';
+      // User is logged in to a production tenant (not demo sandbox)
+      if (token && token !== 'demo-token' && org && org.slug !== 'karsa-solar' && !isDemoMode) {
+        setIsProductionUser(true);
+      }
+    }
+  }, []);
 
   const navItems = [
     { id: 'video', label: '1. Video Tutorial & Alur Lengkap', icon: PlayCircle, badge: 'Video E2E' },
@@ -68,15 +82,17 @@ export default function DocumentationPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/demo"
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Buka Simulasi Demo Live</span>
-          </Link>
-        </div>
+        {!isProductionUser && (
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/demo"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Buka Simulasi Demo Live</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Sidebar Tabs + Content Area */}

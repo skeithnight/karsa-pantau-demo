@@ -121,7 +121,7 @@ export class NineRouterService {
 
   async *streamChat(
     messages: ChatMessage[],
-    options: { model?: string; temperature?: number } = {},
+    options: { model?: string; temperature?: number; maxTokens?: number } = {},
   ): AsyncGenerator<string, void, unknown> {
     const model = options.model || this.defaultModel;
 
@@ -135,9 +135,10 @@ export class NineRouterService {
         model,
         messages,
         temperature: options.temperature ?? 0.3,
+        max_tokens: options.maxTokens ?? 1000,
         stream: true,
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(180000),
     });
 
     if (!res.ok) {
