@@ -3,13 +3,22 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { DatabaseService } from '../../database/database.service';
 
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: JWT_SECRET wajib diset di production.');
+  }
+  return 'karsa_dev_fallback_jwt_secret_not_for_production';
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly db: DatabaseService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'karsa_jwt_access_secret_production_key_32chars',
+      secretOrKey: getJwtSecret(),
     });
   }
 

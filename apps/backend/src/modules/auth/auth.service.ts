@@ -3,6 +3,19 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from '../../database/database.service';
 
+/**
+ * Helper: Ambil JWT secret dari env var. Fail-fast di production jika tidak diset.
+ * Di development, fallback ke default secret untuk kemudahan local dev.
+ */
+function getJwtSecret(envKey: string): string {
+  const secret = process.env[envKey];
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`FATAL: Environment variable '${envKey}' wajib diset di production. Aplikasi tidak boleh berjalan tanpa secret JWT yang aman.`);
+  }
+  return `karsa_dev_fallback_${envKey.toLowerCase()}_not_for_production`;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -28,11 +41,11 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET || 'karsa_jwt_access_secret_production_key_32chars',
+      secret: getJwtSecret('JWT_SECRET'),
       expiresIn: '1h',
     });
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'karsa_jwt_refresh_secret_production_key_32chars',
+      secret: getJwtSecret('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
     });
 
@@ -67,11 +80,11 @@ export class AuthService {
   async refreshToken(token: string) {
     try {
       const payload = this.jwtService.verify(token, {
-        secret: process.env.JWT_REFRESH_SECRET || 'karsa_jwt_refresh_secret_production_key_32chars',
+        secret: getJwtSecret('JWT_REFRESH_SECRET'),
       });
       const newPayload = { sub: payload.sub, email: payload.email, role: payload.role };
       const accessToken = this.jwtService.sign(newPayload, {
-        secret: process.env.JWT_SECRET || 'karsa_jwt_access_secret_production_key_32chars',
+        secret: getJwtSecret('JWT_SECRET'),
         expiresIn: '1h',
       });
       return { accessToken };

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { NineRouterService } from './services/nine-router.service';
 import { AiSemanticSearchService } from './services/ai-semantic-search.service';
@@ -8,6 +9,7 @@ import { AiChatService, ChatRequestDto } from './services/ai-chat.service';
 import { DatabaseService } from '../../database/database.service';
 
 @Controller('ai')
+@UseGuards(AuthGuard('jwt'))
 export class AiController {
   constructor(
     private readonly nineRouter: NineRouterService,

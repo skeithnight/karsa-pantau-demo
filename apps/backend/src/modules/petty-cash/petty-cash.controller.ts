@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { PettyCashService, CreatePettyCashDto, SettlePettyCashDto } from './petty-cash.service';
 
 @Controller('projects/:projectId/petty-cash')
+@UseGuards(AuthGuard('jwt'))
 export class PettyCashController {
   constructor(private readonly pettyCashService: PettyCashService) {}
 

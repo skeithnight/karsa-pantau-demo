@@ -188,24 +188,26 @@ export class RabService {
       throw new BadRequestException('Hanya RAB berstatus submitted yang dapat di-approve');
     }
 
-    const res = await this.db.query(
-      `UPDATE rab
-       SET status = $1, approved_by = $2, approved_at = now(), updated_at = now()
-       WHERE id = $3 RETURNING *`,
-      [RabStatus.APPROVED, approverId, rabId],
-    );
+    return this.db.withTransaction(async (client) => {
+      const res = await client.query(
+        `UPDATE rab
+         SET status = $1, approved_by = $2, approved_at = now(), updated_at = now()
+         WHERE id = $3 RETURNING *`,
+        [RabStatus.APPROVED, approverId, rabId],
+      );
 
-    // Salin item pekerjaan ke rab_item_history untuk knowledge base pencarian harga masa depan
-    await this.db.query(
-      `INSERT INTO rab_item_history (source_project_id, item_code, work_package, category, description, unit, unit_price)
-       SELECT r.project_id, ri.item_code, ri.work_package, ri.category, ri.description, ri.unit, ri.unit_price
-       FROM rab_items ri
-       JOIN rab r ON r.id = ri.rab_id
-       WHERE ri.rab_id = $1`,
-      [rabId],
-    );
+      // Salin item pekerjaan ke rab_item_history untuk knowledge base pencarian harga masa depan
+      await client.query(
+        `INSERT INTO rab_item_history (source_project_id, item_code, work_package, category, description, unit, unit_price)
+         SELECT r.project_id, ri.item_code, ri.work_package, ri.category, ri.description, ri.unit, ri.unit_price
+         FROM rab_items ri
+         JOIN rab r ON r.id = ri.rab_id
+         WHERE ri.rab_id = $1`,
+        [rabId],
+      );
 
-    return res.rows[0];
+      return res.rows[0];
+    });
   }
 
   async reject(rabId: string, note: string) {

@@ -133,6 +133,11 @@ services:
       MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET:-minio_admin_password}
     volumes:
       - minio_prod_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 8. 9Router AI Proxy Gateway (Isolated Internal)
   nine-router:

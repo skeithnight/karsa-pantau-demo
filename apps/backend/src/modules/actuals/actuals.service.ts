@@ -83,32 +83,23 @@ export class ActualsService {
     const projectedTotal = currentTotal + newEntryTotal;
     const isDiscrepancy = this.varianceCalculator.isOverbudget(parseFloat(item.subtotal), projectedTotal, 10); // alert jika > +10%
 
-    // 4. Insert actual entry
-    const insertQuery = `
-      INSERT INTO actual_entries (
-        ${data.clientGeneratedId ? 'id,' : ''}
-        rab_item_id, item_code, idempotency_key, entry_date, qty, actual_unit_price,
-        vendor, invoice_number, description, entered_by, source, is_discrepancy
-      ) VALUES (
-        ${data.clientGeneratedId ? '$1,' : ''}
-        $${data.clientGeneratedId ? 2 : 1},
-        $${data.clientGeneratedId ? 3 : 2},
-        $${data.clientGeneratedId ? 4 : 3},
-        $${data.clientGeneratedId ? 5 : 4},
-        $${data.clientGeneratedId ? 6 : 5},
-        $${data.clientGeneratedId ? 7 : 6},
-        $${data.clientGeneratedId ? 8 : 7},
-        $${data.clientGeneratedId ? 9 : 8},
-        $${data.clientGeneratedId ? 10 : 9},
-        $${data.clientGeneratedId ? 11 : 10},
-        $${data.clientGeneratedId ? 12 : 11},
-        $${data.clientGeneratedId ? 13 : 12}
-      ) RETURNING *
-    `;
+    // 4. Insert actual entry dan attachments dalam transaksi atomik
+    const cols = [
+      'rab_item_id',
+      'item_code',
+      'idempotency_key',
+      'entry_date',
+      'qty',
+      'actual_unit_price',
+      'vendor',
+      'invoice_number',
+      'description',
+      'entered_by',
+      'source',
+      'is_discrepancy',
+    ];
 
-    const values: any[] = [];
-    if (data.clientGeneratedId) values.push(data.clientGeneratedId);
-    values.push(
+    const values: any[] = [
       rabItemId,
       item.item_code,
       data.idempotencyKey || null,
@@ -121,28 +112,38 @@ export class ActualsService {
       userId,
       data.source || ActualSource.MANUAL,
       isDiscrepancy,
-    );
+    ];
 
-    const res = await this.db.query(insertQuery, values);
-    const createdEntry = res.rows[0];
-
-    // Hubungkan attachments jika ada
-    if (data.attachmentUrls && data.attachmentUrls.length > 0) {
-      for (const url of data.attachmentUrls) {
-        await this.db.query(
-          `INSERT INTO attachments (actual_entry_id, project_id, file_url, file_name, mime_type, file_size_bytes, uploaded_by)
-           VALUES ($1, $2, $3, $4, 'image/jpeg', 0, $5)`,
-          [createdEntry.id, item.project_id, url, 'nota-bukti.jpg', userId],
-        );
-      }
+    if (data.clientGeneratedId) {
+      cols.unshift('id');
+      values.unshift(data.clientGeneratedId);
     }
 
-    return {
-      ...createdEntry,
-      qty: parseFloat(createdEntry.qty),
-      actual_unit_price: parseFloat(createdEntry.actual_unit_price),
-      total_actual_amount: parseFloat(createdEntry.total_actual_amount),
-      is_overbudget: isDiscrepancy,
-    };
+    const placeholders = values.map((_, idx) => `$${idx + 1}`).join(', ');
+    const insertQuery = `INSERT INTO actual_entries (${cols.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+
+    return this.db.withTransaction(async (client) => {
+      const res = await client.query(insertQuery, values);
+      const createdEntry = res.rows[0];
+
+      // Hubungkan attachments jika ada secara atomik
+      if (data.attachmentUrls && data.attachmentUrls.length > 0) {
+        for (const url of data.attachmentUrls) {
+          await client.query(
+            `INSERT INTO attachments (actual_entry_id, project_id, file_url, file_name, mime_type, file_size_bytes, uploaded_by)
+             VALUES ($1, $2, $3, $4, 'image/jpeg', 0, $5)`,
+            [createdEntry.id, item.project_id, url, 'nota-bukti.jpg', userId],
+          );
+        }
+      }
+
+      return {
+        ...createdEntry,
+        qty: parseFloat(createdEntry.qty),
+        actual_unit_price: parseFloat(createdEntry.actual_unit_price),
+        total_actual_amount: parseFloat(createdEntry.total_actual_amount),
+        is_overbudget: isDiscrepancy,
+      };
+    });
   }
 }

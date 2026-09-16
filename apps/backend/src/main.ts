@@ -18,10 +18,24 @@ async function bootstrap() {
     }),
   );
 
+  // Whitelist hanya origin produksi yang dikenal — wildcard '*' DILARANG di production
+  const allowedOrigins = [
+    'https://karsapantau.com',
+    'https://app.karsapantau.id',
+    ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:3001'] : []),
+  ];
   app.enableCors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Izinkan request tanpa origin (mobile apps, curl, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin '${origin}' tidak diizinkan oleh CORS policy`));
+      }
+    },
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type,Accept,Authorization,Idempotency-Key',
+    allowedHeaders: 'Content-Type,Accept,Authorization,Idempotency-Key,X-Organization-Id',
   });
 
   // Graceful shutdown handling for Kubernetes SIGTERM signal

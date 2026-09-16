@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { DailyLogsService, UpsertDailyLogDto } from './daily-logs.service';
 
 @Controller('projects/:projectId/daily-logs')
+@UseGuards(AuthGuard('jwt'))
 export class DailyLogsController {
   constructor(private readonly dailyLogsService: DailyLogsService) {}
 
