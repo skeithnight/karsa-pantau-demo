@@ -246,9 +246,16 @@ export class RabService {
     const totalRab = this.calculator.calculateTotalRab(items);
     const weights = this.calculator.calculateWeights(items, totalRab);
 
-    // Update bobot masing-masing item
-    for (let i = 0; i < items.length; i++) {
-      await this.db.query('UPDATE rab_items SET weight_pct = $1 WHERE id = $2', [weights[i], items[i].id]);
+    // Batch update bobot masing-masing item menggunakan UNNEST (O(1) round-trip bukan O(N))
+    if (items.length > 0) {
+      const ids = items.map((it) => it.id);
+      await this.db.query(
+        `UPDATE rab_items AS ri
+         SET weight_pct = v.weight
+         FROM (SELECT unnest($1::uuid[]) AS id, unnest($2::numeric[]) AS weight) AS v
+         WHERE ri.id = v.id`,
+        [ids, weights],
+      );
     }
 
     // Update total amount pada tabel rab

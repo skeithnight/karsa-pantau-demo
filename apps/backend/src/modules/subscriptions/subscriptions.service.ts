@@ -62,28 +62,26 @@ export class SubscriptionsService {
 
     const sub = subRes.rows[0];
 
-    // 2. Hitung jumlah proyek aktif
-    const projCountRes = await this.db.query<any>(
-      `SELECT COUNT(*)::int as count FROM projects WHERE organization_id = $1 AND status != 'completed'`,
-      [organizationId],
-    );
+    // 2, 3, 4: Hitung penggunaan proyek, anggota tim, dan kuota AI secara paralel (P7)
+    const [projCountRes, userCountRes, aiCountRes] = await Promise.all([
+      this.db.query<any>(
+        `SELECT COUNT(*)::int as count FROM projects WHERE organization_id = $1 AND status != 'completed'`,
+        [organizationId],
+      ),
+      this.db.query<any>(
+        `SELECT COUNT(*)::int as count FROM organization_members WHERE organization_id = $1 AND is_active = true`,
+        [organizationId],
+      ),
+      this.db.query<any>(
+        `SELECT COUNT(*)::int as count 
+         FROM ai_insights 
+         WHERE organization_id = $1 
+           AND created_at >= date_trunc('month', now())`,
+        [organizationId],
+      ),
+    ]);
     const projectsUsed = projCountRes.rows[0]?.count || 0;
-
-    // 3. Hitung jumlah anggota tim
-    const userCountRes = await this.db.query<any>(
-      `SELECT COUNT(*)::int as count FROM organization_members WHERE organization_id = $1 AND is_active = true`,
-      [organizationId],
-    );
     const usersUsed = userCountRes.rows[0]?.count || 0;
-
-    // 4. Hitung kuota AI yang dipakai bulan ini
-    const aiCountRes = await this.db.query<any>(
-      `SELECT COUNT(*)::int as count 
-       FROM ai_insights 
-       WHERE organization_id = $1 
-         AND created_at >= date_trunc('month', now())`,
-      [organizationId],
-    );
     const aiQuotaUsed = aiCountRes.rows[0]?.count || 0;
 
     const periodEnd = new Date(sub.current_period_end);

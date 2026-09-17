@@ -1,9 +1,12 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { UserRole } from '@karsa/shared-types';
 import { PettyCashService, CreatePettyCashDto, SettlePettyCashDto } from './petty-cash.service';
 
 @Controller('projects/:projectId/petty-cash')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class PettyCashController {
   constructor(private readonly pettyCashService: PettyCashService) {}
 
@@ -21,6 +24,7 @@ export class PettyCashController {
   }
 
   @Post()
+  @Roles(UserRole.SUPERVISOR, UserRole.PM, UserRole.ADMIN)
   async createRequest(
     @Param('projectId') projectId: string,
     @Body() body: CreatePettyCashDto,
@@ -31,6 +35,7 @@ export class PettyCashController {
   }
 
   @Patch(':id/approve')
+  @Roles(UserRole.APPROVER, UserRole.PM, UserRole.ADMIN)
   async approveRequest(
     @Param('id') id: string,
     @Req() req: any,
@@ -40,11 +45,13 @@ export class PettyCashController {
   }
 
   @Patch(':id/disburse')
+  @Roles(UserRole.APPROVER, UserRole.ADMIN)
   async disburseRequest(@Param('id') id: string) {
     return this.pettyCashService.disburseRequest(id);
   }
 
   @Post(':id/settle')
+  @Roles(UserRole.SUPERVISOR, UserRole.PM, UserRole.ADMIN)
   async settleRequest(
     @Param('id') id: string,
     @Body() body: SettlePettyCashDto,
@@ -53,6 +60,7 @@ export class PettyCashController {
   }
 
   @Patch(':id/reject')
+  @Roles(UserRole.APPROVER, UserRole.PM, UserRole.ADMIN)
   async rejectRequest(
     @Param('id') id: string,
     @Body() body: { reason?: string },

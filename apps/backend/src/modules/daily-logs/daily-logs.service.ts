@@ -118,18 +118,18 @@ export class DailyLogsService {
   async calculateEotSummary(projectId: string) {
     const res = await this.db.query(
       `SELECT
-         COUNT(*)::int as total_days_logged,
-         COALESCE(SUM(work_hours_lost), 0) as total_hours_lost,
-         COALESCE(SUM(work_hours_effective), 0) as total_hours_effective,
-         COUNT(CASE WHEN weather_morning IN ('hujan_lebat', 'banjir') 
-                      OR weather_afternoon IN ('hujan_lebat', 'banjir') 
-                      OR weather_evening IN ('hujan_lebat', 'banjir') 
-                    THEN 1 END)::int as rain_days_count,
+         1 as total_days_logged,
+         COALESCE(work_hours_lost, 0) as total_hours_lost,
+         COALESCE(work_hours_effective, 0) as total_hours_effective,
+         (CASE WHEN weather_morning IN ('hujan_lebat', 'banjir') 
+                  OR weather_afternoon IN ('hujan_lebat', 'banjir') 
+                  OR weather_evening IN ('hujan_lebat', 'banjir') 
+               THEN 1 ELSE 0 END)::int as rain_days_count,
          dsl.manpower_data,
          dsl.equipment_data
        FROM daily_site_logs dsl
        WHERE dsl.project_id = $1
-       GROUP BY dsl.manpower_data, dsl.equipment_data`,
+       ORDER BY dsl.log_date ASC`,
       [projectId],
     );
 

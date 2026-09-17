@@ -81,4 +81,40 @@ describe('PettyCashService', () => {
       expect(summary.pendingApprovalAmount).toBe(800000);
     });
   });
+
+  describe('approveRequest', () => {
+    it('should throw BadRequestException on SoD violation if creator attempts to approve self-request', async () => {
+      (mockDb.query as jest.Mock).mockResolvedValueOnce({
+        rows: [{ id: 'pc-1', status: 'submitted', created_by: 'user-creator' }],
+      });
+
+      await expect(service.approveRequest('pc-1', 'user-creator')).rejects.toThrow(
+        /Prinsip SoD/,
+      );
+    });
+
+    it('should throw BadRequestException if request is not in submitted state', async () => {
+      (mockDb.query as jest.Mock).mockResolvedValueOnce({
+        rows: [{ id: 'pc-1', status: 'approved', created_by: 'user-creator' }],
+      });
+
+      await expect(service.approveRequest('pc-1', 'user-approver')).rejects.toThrow(
+        /Hanya pengajuan berstatus 'submitted'/,
+      );
+    });
+
+    it('should successfully approve request when approver differs from creator', async () => {
+      (mockDb.query as jest.Mock)
+        .mockResolvedValueOnce({
+          rows: [{ id: 'pc-1', status: 'submitted', created_by: 'user-creator' }],
+        })
+        .mockResolvedValueOnce({
+          rows: [{ id: 'pc-1', status: 'approved', approved_by: 'user-approver' }],
+        });
+
+      const res = await service.approveRequest('pc-1', 'user-approver');
+      expect(res.status).toBe('approved');
+      expect(res.approved_by).toBe('user-approver');
+    });
+  });
 });

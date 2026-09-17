@@ -121,6 +121,21 @@ export class PettyCashService {
   }
 
   async approveRequest(id: string, approverId?: string) {
+    const existing = await this.db.query(
+      'SELECT id, status, created_by FROM petty_cash_transactions WHERE id = $1',
+      [id],
+    );
+    if (existing.rows.length === 0) {
+      throw new NotFoundException(`Pengajuan kasbon ${id} tidak ditemukan.`);
+    }
+    const item = existing.rows[0];
+    if (item.status !== 'submitted') {
+      throw new BadRequestException(`Hanya pengajuan berstatus 'submitted' yang dapat disetujui (status saat ini: ${item.status}).`);
+    }
+    if (approverId && item.created_by && item.created_by === approverId) {
+      throw new BadRequestException('Prinsip SoD: Pembuat pengajuan kasbon tidak boleh menyetujui pengajuannya sendiri.');
+    }
+
     const res = await this.db.query(
       `UPDATE petty_cash_transactions
        SET status = 'approved', approved_by = $2
@@ -128,10 +143,6 @@ export class PettyCashService {
        RETURNING *`,
       [id, approverId || null],
     );
-
-    if (res.rows.length === 0) {
-      throw new NotFoundException(`Pengajuan kasbon ${id} tidak ditemukan.`);
-    }
 
     return res.rows[0];
   }

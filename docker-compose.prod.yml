@@ -55,7 +55,7 @@ services:
       OBJECT_STORAGE_SECRET: ${OBJECT_STORAGE_SECRET:-minio_admin_password}
       OBJECT_STORAGE_USE_SSL: ${OBJECT_STORAGE_USE_SSL:-false}
       NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
-      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-sk-85b7dc558fb57f97-rwjq4l-06528d60}
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY}
       NINE_ROUTER_MODEL: ${NINE_ROUTER_MODEL:-karsacombo}
     depends_on:
       postgres:
@@ -84,7 +84,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       NINE_ROUTER_BASE_URL: http://nine-router:20128/v1
-      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY:-sk-85b7dc558fb57f97-rwjq4l-06528d60}
+      NINE_ROUTER_API_KEY: ${NINE_ROUTER_API_KEY}
       NINE_ROUTER_MODEL: ${NINE_ROUTER_MODEL:-karsacombo}
     depends_on:
       postgres:

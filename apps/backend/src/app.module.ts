@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -15,6 +17,8 @@ import { PettyCashModule } from './modules/petty-cash/petty-cash.module';
 
 @Module({
   imports: [
+    // S1: Global rate limiting — 60 requests/minute per IP (auth endpoints override to stricter limits)
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     DatabaseModule,
     HealthModule,
     AuthModule,
@@ -28,6 +32,12 @@ import { PettyCashModule } from './modules/petty-cash/petty-cash.module';
     DailyLogsModule,
     PettyCashModule,
     AiModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

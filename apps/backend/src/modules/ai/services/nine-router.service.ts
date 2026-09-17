@@ -21,8 +21,11 @@ export class NineRouterService {
 
   constructor() {
     this.baseUrl = (process.env.NINE_ROUTER_BASE_URL || 'http://localhost:20128/v1').replace(/\/+$/, '');
-    this.apiKey = process.env.NINE_ROUTER_API_KEY || 'sk-85b7dc558fb57f97-rwjq4l-06528d60';
+    this.apiKey = process.env.NINE_ROUTER_API_KEY || '';
     this.defaultModel = process.env.NINE_ROUTER_MODEL || 'karsacombo';
+    if (!this.apiKey) {
+      this.logger.warn('NINE_ROUTER_API_KEY is not set. AI Gateway calls will fail unless configured in environment.');
+    }
   }
 
   getDefaultModel(): string {
